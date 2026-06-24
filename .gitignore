@@ -1,0 +1,15 @@
+.DS_Store
+.superpowers/
+.build/
+
+# macOS / Xcode
+build/
+dist/
+DerivedData/
+*.xcodeproj/xcuserdata/
+*.xcodeproj/project.xcworkspace/xcuserdata/
+.swiftpm/
+*.xcuserstate
+
+# Models / large assets downloaded at runtime
+Models/

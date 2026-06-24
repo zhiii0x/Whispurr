@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!--
+      Hardened Runtime entitlements (required for notarization). The app is
+      intentionally NOT sandboxed (per the design): CGEventTap (Input Monitoring)
+      and synthetic ⌘V / Accessibility injection cannot run inside the sandbox.
+      Mic access is governed by TCC + NSMicrophoneUsageDescription; the
+      audio-input Hardened-Runtime entitlement below permits it.
+    -->
+    <key>com.apple.security.device.audio-input</key>
+    <true/>
+</dict>
+</plist>
