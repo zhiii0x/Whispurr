@@ -14,11 +14,8 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/macOS-26%20Tahoe-7c6aa6">
-  <img src="https://img.shields.io/badge/Apple%20Silicon-arm64-555">
-  <img src="https://img.shields.io/badge/Swift-6-f05138">
-  <img src="https://img.shields.io/github/v/release/zhiii0x/whispurr?color=3b82f6">
-  <img src="https://img.shields.io/badge/Notarized-Apple-2ea44f">
+  <a href="https://github.com/zhiii0x/whispurr/releases/latest"><img alt="最新版本" src="https://img.shields.io/github/v/release/zhiii0x/whispurr?color=3b82f6"></a>
+  <a href="https://github.com/zhiii0x/whispurr/releases/latest"><img alt="需要 macOS 26 Tahoe" src="https://img.shields.io/badge/macOS-26%20Tahoe-7c6aa6"></a>
 </p>
 
 <p align="center">
