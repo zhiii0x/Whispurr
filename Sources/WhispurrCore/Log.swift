@@ -6,7 +6,7 @@ import os
 /// they are marked `.private` and only built in DEBUG, honoring the product's
 /// "nothing leaves the Mac" promise (plain NSLog %@ would persist them publicly).
 public enum Log {
-    public static let subsystem = "tw.digilog.whispurr"
+    public static let subsystem = "nono.today.whispurr"
 
     public static let app      = Logger(subsystem: subsystem, category: "app")
     public static let pipeline = Logger(subsystem: subsystem, category: "pipeline")

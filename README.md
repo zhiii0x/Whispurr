@@ -125,7 +125,7 @@ swift run Whispurr   # launch the menu-bar app (hold fn to dictate)
 ```
 
 Diagnostics go to the unified log (no transcript content):
-`log stream --predicate 'subsystem == "tw.digilog.whispurr"'`
+`log stream --predicate 'subsystem == "nono.today.whispurr"'`
 
 ## Package a release
 

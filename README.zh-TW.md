@@ -124,7 +124,7 @@ swift run Whispurr   # 啟動選單列 app（按住 fn 聽寫）
 ```
 
 診斷訊息會寫到統一日誌（不含逐字稿內容）：
-`log stream --predicate 'subsystem == "tw.digilog.whispurr"'`
+`log stream --predicate 'subsystem == "nono.today.whispurr"'`
 
 ## 打包發行
 
