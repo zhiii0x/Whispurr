@@ -28,41 +28,77 @@ final class AudioCapture: @unchecked Sendable {
     func makeStream() -> AsyncStream<AnalyzerInput> {
         AsyncStream { continuation in
             self.continuation = continuation
-            let input = engine.inputNode
-            let hwFormat = input.outputFormat(forBus: 0)
-            let conv = AVAudioConverter(from: hwFormat, to: targetFormat)
-            conv?.primeMethod = .none
-            self.converter = conv
-            input.installTap(onBus: 0, bufferSize: 4096, format: hwFormat) { [weak self] buffer, _ in
-                guard let self, let out = self.convert(buffer) else { return }
-                self.continuation?.yield(AnalyzerInput(buffer: out))
-            }
+            self.installTap(format: engine.inputNode.outputFormat(forBus: 0))
         }
     }
 
     func start() throws {
         engine.prepare()
-        // If the hardware input route changes mid-dictation (AirPods unplugged,
-        // input device switched), the tap/converter become invalid and would
-        // silently emit nothing. Finish the stream so the cycle finalizes with
-        // whatever was captured rather than hanging on an empty transcript.
+        // A hardware input route change fires this notification. The important
+        // (and previously-broken) case: Bluetooth mics (AirPods) flip from the
+        // A2DP playback route to the HFP "call" route the instant capture starts —
+        // so a configuration change arrives ~immediately, BEFORE any audio. The old
+        // code finished the stream here, which is exactly why AirPods recorded pure
+        // silence ("speaking, no response"). Instead, rebuild the tap + converter
+        // against the new route's format and keep capturing. Only finish if there's
+        // no valid input left (e.g. the sole mic was unplugged mid-dictation), so a
+        // genuine device-loss still finalizes with whatever was captured.
         configObserver = NotificationCenter.default.addObserver(
             forName: .AVAudioEngineConfigurationChange, object: engine, queue: .main
         ) { [weak self] _ in
-            Log.audio.notice("audio configuration changed mid-capture — finishing stream")
-            self?.continuation?.finish()
+            self?.handleConfigurationChange()
         }
         try engine.start()
     }
 
     func stop() {
+        // Remove the observer FIRST: engine.stop() itself can fire a configuration
+        // change, and we must not re-enter the handler (which would rebuild the tap)
+        // while tearing down.
+        if let configObserver {
+            NotificationCenter.default.removeObserver(configObserver)
+            self.configObserver = nil
+        }
         engine.inputNode.removeTap(onBus: 0)   // guarantees the tap block won't fire again…
         engine.stop()
         continuation?.finish()                  // …before we tear down the continuation
         continuation = nil
-        if let configObserver {
-            NotificationCenter.default.removeObserver(configObserver)
-            self.configObserver = nil
+    }
+
+    /// Install (or reinstall) the input tap + converter for `hwFormat`. Re-runnable:
+    /// `removeTap` drains any prior tap before we swap the converter, so the realtime
+    /// block never reads a converter that doesn't match its buffers.
+    private func installTap(format hwFormat: AVAudioFormat) {
+        let input = engine.inputNode
+        input.removeTap(onBus: 0)
+        let conv = AVAudioConverter(from: hwFormat, to: targetFormat)
+        conv?.primeMethod = .none
+        self.converter = conv
+        input.installTap(onBus: 0, bufferSize: 4096, format: hwFormat) { [weak self] buffer, _ in
+            guard let self, let out = self.convert(buffer) else { return }
+            self.continuation?.yield(AnalyzerInput(buffer: out))
+        }
+    }
+
+    /// React to a mid-capture route change (see `start()`): rebuild against the new
+    /// input format and keep going, or finish if no usable input remains.
+    private func handleConfigurationChange() {
+        guard let continuation else { return }   // already torn down / not capturing
+        let hwFormat = engine.inputNode.outputFormat(forBus: 0)
+        guard hwFormat.sampleRate > 0, hwFormat.channelCount > 0 else {
+            Log.audio.notice("audio route lost (no valid input) — finishing stream")
+            continuation.finish()
+            return
+        }
+        Log.audio.notice(
+            "audio route changed — rebuilding tap @ \(Int(hwFormat.sampleRate), privacy: .public)Hz \(hwFormat.channelCount, privacy: .public)ch")
+        installTap(format: hwFormat)
+        if !engine.isRunning {
+            do { try engine.start() }
+            catch {
+                Log.audio.error("engine restart after route change failed: \(String(describing: error), privacy: .public)")
+                continuation.finish()
+            }
         }
     }
 
