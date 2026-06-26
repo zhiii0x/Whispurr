@@ -43,7 +43,7 @@ cat > "$APP/Contents/Info.plist" <<PLIST
     <key>CFBundleShortVersionString</key><string>$VERSION</string>
     <key>CFBundleVersion</key><string>$BUILD_NUM</string>
     <key>LSMinimumSystemVersion</key><string>26.0</string>
-    <key>LSUIElement</key><true/>
+    <key>LSUIElement</key><false/>
     <key>NSMicrophoneUsageDescription</key>
     <string>Whispurr listens to your voice locally to type what you say.</string>
     <key>NSSpeechRecognitionUsageDescription</key>
