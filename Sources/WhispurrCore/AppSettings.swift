@@ -78,6 +78,10 @@ public struct AppSettings: Codable, Equatable, Sendable {
     /// Hard cap on a single utterance so a stuck-down key can't record forever.
     public var maxListenSeconds: Double
     public var vocabulary: [VocabularyRule]
+    /// Opt-in: when on, the app makes a single anonymous GitHub request on launch
+    /// to see if a newer release exists. Off by default (privacy-first); a manual
+    /// "Check for Updates" button in Settings works regardless.
+    public var checkForUpdatesAutomatically: Bool
 
     public init(language: Language = .english,
                 hotkey: HotkeyPreset = .fn,
@@ -87,7 +91,8 @@ public struct AppSettings: Codable, Equatable, Sendable {
                 launchAtLogin: Bool = false,
                 restoreClipboard: Bool = true,
                 maxListenSeconds: Double = 60,
-                vocabulary: [VocabularyRule] = []) {
+                vocabulary: [VocabularyRule] = [],
+                checkForUpdatesAutomatically: Bool = false) {
         self.language = language
         self.hotkey = hotkey
         self.insertionMode = insertionMode
@@ -97,6 +102,7 @@ public struct AppSettings: Codable, Equatable, Sendable {
         self.restoreClipboard = restoreClipboard
         self.maxListenSeconds = maxListenSeconds
         self.vocabulary = vocabulary
+        self.checkForUpdatesAutomatically = checkForUpdatesAutomatically
     }
 
     /// Decode tolerantly: missing keys (older saved blobs) fall back to defaults.
@@ -112,5 +118,7 @@ public struct AppSettings: Codable, Equatable, Sendable {
         restoreClipboard = try c.decodeIfPresent(Bool.self, forKey: .restoreClipboard) ?? d.restoreClipboard
         maxListenSeconds = try c.decodeIfPresent(Double.self, forKey: .maxListenSeconds) ?? d.maxListenSeconds
         vocabulary = try c.decodeIfPresent([VocabularyRule].self, forKey: .vocabulary) ?? d.vocabulary
+        checkForUpdatesAutomatically = try c.decodeIfPresent(Bool.self, forKey: .checkForUpdatesAutomatically)
+            ?? d.checkForUpdatesAutomatically
     }
 }

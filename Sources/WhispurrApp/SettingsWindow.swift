@@ -51,6 +51,7 @@ import WhispurrCore
 
 struct SettingsView: View {
     @ObservedObject var vm: SettingsViewModel
+    @StateObject private var updates = UpdateModel()
 
     var body: some View {
         Form {
@@ -97,8 +98,50 @@ struct SettingsView: View {
                 }
                 Button { vm.addRule() } label: { Label(L10n.t(.addRule), systemImage: "plus") }
             }
+
+            Section(L10n.t(.secAbout)) {
+                LabeledContent("Whispurr", value: AppInfo.displayVersion)
+                LabeledContent(L10n.t(.aboutMadeBy), value: "zhiii0x")
+                updateRow
+                Toggle(L10n.t(.fieldAutoUpdate), isOn: $vm.settings.checkForUpdatesAutomatically)
+                Link(destination: URL(string: "https://github.com/zhiii0x/Whispurr")!) {
+                    Label("GitHub", systemImage: "chevron.left.forwardslash.chevron.right")
+                }
+                Link(destination: URL(string: "https://x.com/zhiii0x")!) {
+                    Label("X (@zhiii0x)", systemImage: "at")
+                }
+                Link(destination: URL(string: "https://nono.today")!) {
+                    Label("nono.today", systemImage: "globe")
+                }
+            }
         }
         .formStyle(.grouped)
-        .frame(width: 460, height: 560)
+        .frame(width: 460, height: 700)
+        .onAppear {
+            if vm.settings.checkForUpdatesAutomatically, updates.state == .idle { updates.check() }
+        }
+    }
+
+    /// "Check for Updates" button with an inline result. The download link opens
+    /// the GitHub release page — we never auto-install (the user re-downloads the
+    /// signed DMG, so Gatekeeper trust is untouched).
+    @ViewBuilder private var updateRow: some View {
+        HStack {
+            Button(L10n.t(.checkUpdates)) { updates.check() }
+                .disabled(updates.state == .checking)
+            Spacer()
+            switch updates.state {
+            case .idle:
+                EmptyView()
+            case .checking:
+                ProgressView().controlSize(.small)
+            case .upToDate:
+                Text(L10n.t(.upToDate)).font(.caption).foregroundStyle(.secondary)
+            case .failed:
+                Text(L10n.t(.updateFailed)).font(.caption).foregroundStyle(.secondary)
+            case let .available(version, url):
+                Link(L10n.t(.downloadUpdate, version), destination: url)
+            }
+        }
     }
 }

@@ -9,6 +9,8 @@ import WhispurrCore
     private let statusItem: NSStatusItem
     private let animator: CatAnimator
 
+    private let updateItem    = NSMenuItem()
+    private let updateSep     = NSMenuItem.separator()
     private let lastItem     = NSMenuItem()
     private let copyItem      = NSMenuItem()
     private let aiItem        = NSMenuItem()
@@ -20,6 +22,8 @@ import WhispurrCore
     private var lastTranscript = ""
     private var enabled = true
     private var aiAvailable = false
+    private var updateVersion: String?
+    private var updateURL: URL?
 
     var onToggleEnabled: ((Bool) -> Void)?
     var onOpenSettings: (() -> Void)?
@@ -52,8 +56,19 @@ import WhispurrCore
         toggleItem.title = on ? L10n.t(.pause) : L10n.t(.resume)
     }
 
+    /// Surface a newer release at the top of the menu. Clicking it opens the
+    /// GitHub release page; the app never downloads or installs anything itself.
+    func setUpdateAvailable(version: String, url: URL) {
+        updateVersion = version
+        updateURL = url
+        updateItem.title = L10n.t(.menuUpdateAvailable, version)
+        updateItem.isHidden = false
+        updateSep.isHidden = false
+    }
+
     /// Re-title every item after a language change.
     func applyLanguage() {
+        if let updateVersion { updateItem.title = L10n.t(.menuUpdateAvailable, updateVersion) }
         setLastTranscript(lastTranscript)
         copyItem.title = L10n.t(.copyLast)
         setAIAvailable(aiAvailable)
@@ -65,6 +80,11 @@ import WhispurrCore
 
     private func buildMenu() {
         let menu = NSMenu()
+        // Hidden until a check finds a newer release; then surfaces at the top.
+        updateItem.target = self; updateItem.action = #selector(openUpdate)
+        updateItem.isHidden = true; updateSep.isHidden = true
+        menu.addItem(updateItem)
+        menu.addItem(updateSep)
         lastItem.isEnabled = false
         menu.addItem(lastItem)
         copyItem.target = self; copyItem.action = #selector(copyLast)
@@ -102,4 +122,5 @@ import WhispurrCore
 
     @objc private func openSettings() { onOpenSettings?() }
     @objc private func openPermissions() { onOpenPermissions?() }
+    @objc private func openUpdate() { if let updateURL { NSWorkspace.shared.open(updateURL) } }
 }

@@ -84,6 +84,16 @@ import WhispurrPipeline
             let modelReady = await AppleSpeechTranscriberEngine.isModelInstalled()
             if !snap.canDictate || !modelReady { onboarding.show() }
         }
+
+        // Opt-in update check: one anonymous GitHub request, only when enabled.
+        // Surfaces as a menu-bar item if a newer release exists; never installs.
+        if settings.checkForUpdatesAutomatically {
+            Task {
+                if case let .available(version, url) = await UpdateCheck.latest(currentVersion: AppInfo.version) {
+                    self.menuBar.setUpdateAvailable(version: version, url: url)
+                }
+            }
+        }
     }
 
     func applicationWillTerminate(_ notification: Notification) {

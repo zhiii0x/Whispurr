@@ -19,6 +19,9 @@ import WhispurrCore
         case fieldRestoreClipboard, secCleanup, fieldCleanup, noteCleanup
         case secBehavior, fieldSoundCues, fieldLaunchAtLogin, fieldMaxListen
         case secVocab, vocabFrom, vocabTo, caseSensitive, addRule
+        case secAbout, aboutMadeBy
+        case fieldAutoUpdate, checkUpdates, upToDate, updateFailed, downloadUpdate
+        case menuUpdateAvailable
         // Onboarding
         case obTagline, obGrant, obFnHint, obOpenKeyboard, obAIOn, obAIOff
         case obModelDownloading, obStart, obStartBlocked, obWindowTitle
@@ -94,6 +97,14 @@ import WhispurrCore
         case .vocabTo:        return ("replace with…", "改成…")
         case .caseSensitive:  return ("case-sensitive", "區分大小寫")
         case .addRule:        return ("Add rule", "新增規則")
+        case .secAbout:       return ("About", "關於")
+        case .aboutMadeBy:    return ("Designed by", "設計者")
+        case .fieldAutoUpdate: return ("Check for updates automatically", "自動檢查更新")
+        case .checkUpdates:   return ("Check for Updates", "檢查更新")
+        case .upToDate:       return ("You're up to date", "已是最新版")
+        case .updateFailed:   return ("Couldn't check", "無法檢查")
+        case .downloadUpdate: return ("Download %@ →", "下載 %@ →")
+        case .menuUpdateAvailable: return ("Update available: %@", "有新版本：%@")
         // Onboarding
         case .obTagline:      return ("Hold fn and speak — clean text appears at your cursor.",
                                       "按住 fn 說話，乾淨的文字直接出現在游標處。")
