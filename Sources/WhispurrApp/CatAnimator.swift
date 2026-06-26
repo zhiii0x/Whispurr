@@ -73,7 +73,7 @@ import WhispurrCore
         // Menu bar uses the head-crop frames ("menubar-*") so the state (ears /
         // blue headphones / closed eyes) is legible at ~18 px. Full-body frames
         // are kept for the HUD + onboarding hero.
-        guard let url = Bundle.module.url(
+        guard let url = Bundle.whispurrResources.url(
             forResource: "menubar-\(name)", withExtension: "png", subdirectory: "CatFrames"
         ), let image = NSImage(contentsOf: url) else { return nil }
         image.isTemplate = false

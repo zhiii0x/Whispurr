@@ -27,8 +27,8 @@ enum UIStyle {
 
     /// Load a bundled cat frame as an NSImage (e.g. "listening", "menubar-listening").
     static func catImage(_ name: String) -> NSImage? {
-        guard let url = Bundle.module.url(forResource: name, withExtension: "png",
-                                          subdirectory: "CatFrames") else { return nil }
+        guard let url = Bundle.whispurrResources.url(forResource: name, withExtension: "png",
+                                                     subdirectory: "CatFrames") else { return nil }
         return NSImage(contentsOf: url)
     }
 }
