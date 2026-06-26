@@ -10,7 +10,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 APP_NAME="Whispurr"
 VOL_NAME="${VOL_NAME:-Whispurr}"
-VERSION="${VERSION:-0.1.4}"
+VERSION="${VERSION:-0.1.5}"
 DIST="$ROOT/dist"
 APP="$DIST/$APP_NAME.app"
 DMG="$DIST/$APP_NAME-$VERSION.dmg"
