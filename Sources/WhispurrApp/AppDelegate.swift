@@ -20,6 +20,9 @@ import WhispurrPipeline
     private var escMonitor: Any?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        NSApp.setActivationPolicy(.regular)               // Dock icon
+        NSApp.mainMenu = buildMainMenu(settingsTarget: self,
+                                       settingsAction: #selector(openSettingsFromMenu))
         let settings = settingsStore.settings
         L10n.lang = settings.language          // before any UI is built
 
@@ -98,6 +101,20 @@ import WhispurrPipeline
 
     func applicationWillTerminate(_ notification: Notification) {
         if let escMonitor { NSEvent.removeMonitor(escMonitor) }
+    }
+
+    @objc func openSettingsFromMenu() { settingsWindow.show() }
+
+    func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
+        false   // keep running in the menu bar / Dock after windows close
+    }
+
+    func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
+        if !flag {
+            if settingsStore.settings.hasCompletedOnboarding { settingsWindow.show() }
+            else { onboarding.show() }
+        }
+        return true
     }
 
     private func startHotkey() {
