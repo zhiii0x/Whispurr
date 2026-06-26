@@ -152,8 +152,11 @@ Three layers, dependency-injected behind protocols and unit-tested:
 
 ---
 
-<p align="center"><sub>Built on an Apple M4 · Not yet open-source-licensed — please ask before reuse.</sub></p>
+## Support
 
+If Multitrack Tap is useful to you, you can support its development:
+
+<a href="https://buymeacoffee.com/nono.today"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" height="44" alt="Buy Me a Coffee"></a>
 ---
 
 <a id="traditional-chinese"></a>
@@ -309,4 +312,7 @@ MAKE_DMG=1 VERSION=0.1.0 scripts/package.sh   # -> dist/Whispurr-0.1.0.dmg
 
 ---
 
-<p align="center"><sub>在 Apple M4 上打造 · 尚未採用開源授權——再利用前請先詢問。</sub></p>
+## 支持
+
+假如你還喜歡的話，可以買一杯咖啡請我喝 XD
+<a href="https://buymeacoffee.com/nono.today"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" height="44" alt="Buy Me a Coffee"></a>
