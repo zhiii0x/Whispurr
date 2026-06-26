@@ -18,6 +18,7 @@
 <p align="center">
   <a href="https://github.com/zhiii0x/whispurr/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/zhiii0x/whispurr?color=3b82f6"></a>
   <a href="https://github.com/zhiii0x/whispurr/releases/latest"><img alt="Requires macOS 26 Tahoe" src="https://img.shields.io/badge/macOS-26%20Tahoe-7c6aa6"></a>
+  <a href="https://buymeacoffee.com/nono.today"><img alt="Buy Me a Coffee" src="https://img.shields.io/badge/Buy%20Me%20a%20Coffee-nono.today-FFDD00?logo=buymeacoffee&logoColor=black"></a>
 </p>
 
 <p align="center">
@@ -175,6 +176,7 @@ Three layers, dependency-injected behind protocols and unit-tested:
 <p align="center">
   <a href="https://github.com/zhiii0x/whispurr/releases/latest"><img alt="最新版本" src="https://img.shields.io/github/v/release/zhiii0x/whispurr?color=3b82f6"></a>
   <a href="https://github.com/zhiii0x/whispurr/releases/latest"><img alt="需要 macOS 26 Tahoe" src="https://img.shields.io/badge/macOS-26%20Tahoe-7c6aa6"></a>
+  <a href="https://buymeacoffee.com/nono.today"><img alt="請我喝咖啡" src="https://img.shields.io/badge/Buy%20Me%20a%20Coffee-nono.today-FFDD00?logo=buymeacoffee&logoColor=black"></a>
 </p>
 
 <p align="center">
