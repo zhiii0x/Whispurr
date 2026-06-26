@@ -8,7 +8,7 @@ import WhispurrPipeline
     private let permissions = PermissionsManager()
     private let settingsStore = SettingsStore()
     private let hud = FloatingHUD()
-    private lazy var onboarding = OnboardingWindow()
+    private lazy var onboarding = OnboardingWindow(store: settingsStore)
     private lazy var settingsWindow = SettingsWindow(store: settingsStore)
 
     private var menuBar: MenuBarController!
@@ -79,14 +79,8 @@ import WhispurrPipeline
         onboarding.onInputMonitoringGranted = { [weak self] in self?.startHotkey() }
         startHotkey()
 
-        // First-run guidance: onboarding handles permissions AND a missing model
-        // (so the multi-hundred-MB download happens here with a progress bar,
-        // never silently on the first dictation).
-        Task {
-            let snap = permissions.snapshot()
-            let modelReady = await AppleSpeechTranscriberEngine.isModelInstalled()
-            if !snap.canDictate || !modelReady { onboarding.show() }
-        }
+        // First run: show the setup wizard until the user finishes it.
+        if !settings.hasCompletedOnboarding { onboarding.show() }
 
         // Opt-in update check: one anonymous GitHub request, only when enabled.
         // Surfaces as a menu-bar item if a newer release exists; never installs.
