@@ -97,7 +97,6 @@ import WhispurrCore
         menu.addItem(toggleItem)
         menu.addItem(.separator())
         settingsItem.target = self; settingsItem.action = #selector(openSettings)
-        settingsItem.keyEquivalent = ","
         menu.addItem(settingsItem)
         permsItem.target = self; permsItem.action = #selector(openPermissions)
         menu.addItem(permsItem)
@@ -105,6 +104,18 @@ import WhispurrCore
         quitItem.action = #selector(NSApplication.terminate(_:)); quitItem.keyEquivalent = "q"
         menu.addItem(quitItem)
         statusItem.menu = menu
+        menu.delegate = self
+        stripSystemImages(menu)
+    }
+
+    /// macOS 26 auto-decorates recognized rows with SF Symbols (設定 → gear,
+    /// 結束 → quit symbol, 權限 → …), which indents their titles and breaks the
+    /// left edge. Force the system to stamp them now, then clear every image so
+    /// all titles align flush-left with no image column. Once a row's image is
+    /// explicitly nil the system does not re-stamp it.
+    private func stripSystemImages(_ menu: NSMenu) {
+        menu.update()
+        menu.items.forEach { $0.image = nil }
     }
 
     @objc private func toggleEnabled() {
@@ -123,4 +134,12 @@ import WhispurrCore
     @objc private func openSettings() { onOpenSettings?() }
     @objc private func openPermissions() { onOpenPermissions?() }
     @objc private func openUpdate() { if let updateURL { NSWorkspace.shared.open(updateURL) } }
+}
+
+extension MenuBarController: NSMenuDelegate {
+    /// Re-strip the system's auto SF Symbols every time the menu opens — covers
+    /// re-decoration after a language change re-titles the rows.
+    func menuNeedsUpdate(_ menu: NSMenu) {
+        menu.items.forEach { $0.image = nil }
+    }
 }

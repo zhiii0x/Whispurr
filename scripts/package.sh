@@ -13,7 +13,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 APP_NAME="Whispurr"
 BUNDLE_ID="nono.today.whispurr"
-VERSION="${VERSION:-0.1.2}"
+VERSION="${VERSION:-0.1.3}"
 BUILD_NUM="${BUILD_NUM:-1}"
 CONFIG="${CONFIG:-release}"
 DIST="$ROOT/dist"

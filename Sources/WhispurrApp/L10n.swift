@@ -22,6 +22,7 @@ import WhispurrCore
         case secAbout, aboutMadeBy
         case fieldAutoUpdate, checkUpdates, upToDate, updateFailed, downloadUpdate
         case menuUpdateAvailable
+        case tabGeneral, tabDictation, tabVocabulary
         // Onboarding
         case obTagline, obGrant, obFnHint, obOpenKeyboard, obAIOn, obAIOff
         case obModelDownloading, obStart, obStartBlocked, obWindowTitle
@@ -105,6 +106,9 @@ import WhispurrCore
         case .updateFailed:   return ("Couldn't check", "無法檢查")
         case .downloadUpdate: return ("Download %@ →", "下載 %@ →")
         case .menuUpdateAvailable: return ("Update available: %@", "有新版本：%@")
+        case .tabGeneral:     return ("General", "一般")
+        case .tabDictation:   return ("Dictation", "聽寫")
+        case .tabVocabulary:  return ("Vocabulary", "詞彙")
         // Onboarding
         case .obTagline:      return ("Hold fn and speak — clean text appears at your cursor.",
                                       "按住 fn 說話，乾淨的文字直接出現在游標處。")
