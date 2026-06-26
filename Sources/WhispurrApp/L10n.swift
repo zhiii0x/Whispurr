@@ -26,6 +26,13 @@ import WhispurrCore
         // Onboarding
         case obTagline, obGrant, obFnHint, obOpenKeyboard, obAIOn, obAIOff
         case obModelDownloading, obStart, obStartBlocked, obWindowTitle
+        // Wizard
+        case navBack, navNext, navFinish
+        case howTitle, howStep1, howStep2, howStep3, howEscTip
+        case keySetupTitle
+        case tryTitle, tryInstruction, tryPlaceholder
+        case doneTitle, doneBody
+        case menuAbout
         // Permissions
         case permInputTitle, permInputWhy, permMicTitle, permMicWhy
         case permSpeechTitle, permSpeechWhy, permAxTitle, permAxWhy
@@ -125,6 +132,24 @@ import WhispurrCore
         case .obStart:        return ("Get started", "開始使用")
         case .obStartBlocked: return ("Grant the required permissions first", "請先完成必要權限")
         case .obWindowTitle:  return ("Welcome to Whispurr", "歡迎使用 Whispurr")
+        // Wizard
+        case .navBack:        return ("Back", "上一步")
+        case .navNext:        return ("Next", "下一步")
+        case .navFinish:      return ("Finish", "完成設定")
+        case .howTitle:       return ("How it works", "怎麼用")
+        case .howStep1:       return ("Hold the fn key", "按住 fn 鍵")
+        case .howStep2:       return ("Speak — Mandarin + English", "開口說話(中文 + English 都行)")
+        case .howStep3:       return ("Release → text appears at your cursor", "放開 → 文字出現在游標處")
+        case .howEscTip:      return ("Mid-sentence? Press Esc to cancel.", "說到一半想取消?按 Esc。")
+        case .keySetupTitle:  return ("Quick setup", "快速設定")
+        case .tryTitle:       return ("Try it", "試一下")
+        case .tryInstruction: return ("Click the box, then hold fn and say something — your words land here.",
+                                      "點一下方框,按住 fn 說句話 — 文字會出現在這。")
+        case .tryPlaceholder: return ("Your words will appear here…", "你說的話會出現在這…")
+        case .doneTitle:      return ("You're all set", "設定完成")
+        case .doneBody:       return ("Whispurr lives in your menu bar and Dock. Hold fn anywhere to dictate; open Settings from the menu anytime.",
+                                      "Whispurr 在選單列和 Dock 都有。任何地方按住 fn 就能聽寫;之後可從選單打開設定。")
+        case .menuAbout:      return ("About Whispurr", "關於 Whispurr")
         // Permissions
         case .permInputTitle: return ("Input Monitoring", "輸入監控")
         case .permInputWhy:   return ("Detect the fn hotkey (hold to talk)", "偵測 fn 熱鍵（按住說話）")
