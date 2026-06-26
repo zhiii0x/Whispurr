@@ -17,7 +17,9 @@ import Foundation
            let decoded = try? JSONDecoder().decode(AppSettings.self, from: data) {
             settings = decoded
         } else {
-            settings = AppSettings()
+            // First run: start in the user's system language (Chinese for a zh
+            // system, English otherwise) so onboarding reads in their language.
+            settings = AppSettings(language: .systemDefault)
         }
     }
 

@@ -13,6 +13,17 @@ public enum Language: String, CaseIterable, Sendable, Codable, Identifiable {
         case .chinese: return "中文"
         }
     }
+
+    /// Best-guess UI language for a brand-new user (no saved settings yet), from
+    /// the system's preferred languages. Only used on first run; once the user
+    /// has any saved settings their explicit choice always wins.
+    public static var systemDefault: Language { from(preferredLanguages: Locale.preferredLanguages) }
+
+    /// Pure mapping (testable): Chinese when the top preference is any zh variant,
+    /// English otherwise.
+    public static func from(preferredLanguages: [String]) -> Language {
+        (preferredLanguages.first ?? "en").hasPrefix("zh") ? .chinese : .english
+    }
 }
 
 /// A push-to-talk trigger preset. Modifier keys only emit `flagsChanged`, so a
