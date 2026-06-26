@@ -78,6 +78,8 @@ public struct AppSettings: Codable, Equatable, Sendable {
     /// Hard cap on a single utterance so a stuck-down key can't record forever.
     public var maxListenSeconds: Double
     public var vocabulary: [VocabularyRule]
+    /// Set true when the user finishes the setup wizard; gates first-run display.
+    public var hasCompletedOnboarding: Bool
     /// Opt-in: when on, the app makes a single anonymous GitHub request on launch
     /// to see if a newer release exists. Off by default (privacy-first); a manual
     /// "Check for Updates" button in Settings works regardless.
@@ -92,6 +94,7 @@ public struct AppSettings: Codable, Equatable, Sendable {
                 restoreClipboard: Bool = true,
                 maxListenSeconds: Double = 60,
                 vocabulary: [VocabularyRule] = [],
+                hasCompletedOnboarding: Bool = false,
                 checkForUpdatesAutomatically: Bool = false) {
         self.language = language
         self.hotkey = hotkey
@@ -102,6 +105,7 @@ public struct AppSettings: Codable, Equatable, Sendable {
         self.restoreClipboard = restoreClipboard
         self.maxListenSeconds = maxListenSeconds
         self.vocabulary = vocabulary
+        self.hasCompletedOnboarding = hasCompletedOnboarding
         self.checkForUpdatesAutomatically = checkForUpdatesAutomatically
     }
 
@@ -118,6 +122,8 @@ public struct AppSettings: Codable, Equatable, Sendable {
         restoreClipboard = try c.decodeIfPresent(Bool.self, forKey: .restoreClipboard) ?? d.restoreClipboard
         maxListenSeconds = try c.decodeIfPresent(Double.self, forKey: .maxListenSeconds) ?? d.maxListenSeconds
         vocabulary = try c.decodeIfPresent([VocabularyRule].self, forKey: .vocabulary) ?? d.vocabulary
+        hasCompletedOnboarding = try c.decodeIfPresent(Bool.self, forKey: .hasCompletedOnboarding)
+            ?? d.hasCompletedOnboarding
         checkForUpdatesAutomatically = try c.decodeIfPresent(Bool.self, forKey: .checkForUpdatesAutomatically)
             ?? d.checkForUpdatesAutomatically
     }
