@@ -50,6 +50,22 @@ struct OnboardingFlow: View {
             .padding(.horizontal, 24).padding(.vertical, 14)
         }
         .frame(width: 440, height: 520)
+        // Always-available exit: ✕ (or Esc) dismisses the wizard. Calls onFinish so
+        // it also marks onboarding seen — it won't auto-reappear; replay it anytime
+        // from Settings → General → "Replay setup guide".
+        .overlay(alignment: .topTrailing) {
+            Button(action: onFinish) {
+                Image(systemName: "xmark")
+                    .font(.system(size: 11, weight: .bold))
+                    .foregroundStyle(.secondary)
+                    .padding(7)
+                    .background(.white.opacity(0.5), in: Circle())
+            }
+            .buttonStyle(.plain)
+            .keyboardShortcut(.cancelAction)
+            .help(L10n.t(.navClose))
+            .padding(10)
+        }
         .background(UIStyle.softBackground)
         .environment(\.colorScheme, .light)
     }

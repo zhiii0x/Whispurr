@@ -108,11 +108,14 @@ import WhispurrCore
         stripSystemImages(menu)
     }
 
-    /// macOS 26 auto-decorates recognized rows with SF Symbols (設定 → gear,
-    /// 結束 → quit symbol, 權限 → …), which indents their titles and breaks the
-    /// left edge. Force the system to stamp them now, then clear every image so
-    /// all titles align flush-left with no image column. Once a row's image is
-    /// explicitly nil the system does not re-stamp it.
+    /// Defensive backstop for macOS 26's auto SF Symbol decoration of recognized
+    /// rows (設定 → gear, 結束 → quit symbol, 權限 → …). The PRIMARY fix lives in
+    /// main.swift, which disables the feature via the NSMenuEnableActionImages
+    /// default — necessary because the system re-stamps the image at *display* time
+    /// (read back through NSMenuItem.image's getter), so clearing it via the setter
+    /// here can only ever race and the icon flashes in before being cleared. With
+    /// the default off nothing gets stamped, so this is a harmless no-op kept as
+    /// belt-and-suspenders (and to keep titles flush-left if the default regresses).
     private func stripSystemImages(_ menu: NSMenu) {
         menu.update()
         menu.items.forEach { $0.image = nil }

@@ -22,12 +22,12 @@ import WhispurrCore
         case secAbout, aboutMadeBy
         case fieldAutoUpdate, checkUpdates, upToDate, updateFailed, downloadUpdate
         case menuUpdateAvailable
-        case tabGeneral, tabDictation, tabVocabulary
+        case tabGeneral, tabDictation, tabVocabulary, replayGuide, replayGuideButton
         // Onboarding
         case obTagline, obGrant, obFnHint, obOpenKeyboard, obAIOn, obAIOff
         case obModelDownloading, obStart, obStartBlocked, obWindowTitle
         // Wizard
-        case navBack, navNext, navFinish
+        case navBack, navNext, navFinish, navClose
         case howTitle, howStep1, howStep2, howStep3, howEscTip
         case keySetupTitle
         case tryTitle, tryInstruction, tryPlaceholder
@@ -35,7 +35,7 @@ import WhispurrCore
         case menuAbout
         // Permissions
         case permInputTitle, permInputWhy, permMicTitle, permMicWhy
-        case permSpeechTitle, permSpeechWhy, permAxTitle, permAxWhy
+        case permSpeechTitle, permSpeechWhy, permAxTitle, permAxWhy, permWindowTitle
     }
 
     static func t(_ k: Key) -> String {
@@ -116,6 +116,8 @@ import WhispurrCore
         case .tabGeneral:     return ("General", "一般")
         case .tabDictation:   return ("Dictation", "聽寫")
         case .tabVocabulary:  return ("Vocabulary", "詞彙")
+        case .replayGuide:    return ("Setup Guide", "使用教學")
+        case .replayGuideButton: return ("Replay setup guide…", "重新查看教學…")
         // Onboarding
         case .obTagline:      return ("Hold fn and speak — clean text appears at your cursor.",
                                       "按住 fn 說話，乾淨的文字直接出現在游標處。")
@@ -136,6 +138,7 @@ import WhispurrCore
         case .navBack:        return ("Back", "上一步")
         case .navNext:        return ("Next", "下一步")
         case .navFinish:      return ("Finish", "完成設定")
+        case .navClose:       return ("Close", "關閉")
         case .howTitle:       return ("How it works", "怎麼用")
         case .howStep1:       return ("Hold the fn key", "按住 fn 鍵")
         case .howStep2:       return ("Speak — Mandarin + English", "開口說話(中文 + English 都行)")
@@ -159,6 +162,7 @@ import WhispurrCore
         case .permSpeechWhy:  return ("Transcribe speech on-device", "在本機把語音轉成文字")
         case .permAxTitle:    return ("Accessibility", "輔助使用")
         case .permAxWhy:      return ("Insert text at your cursor", "把文字插入到游標所在的 app")
+        case .permWindowTitle: return ("Permissions", "權限")
         }
     }
 }

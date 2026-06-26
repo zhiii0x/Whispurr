@@ -8,7 +8,6 @@ import WhispurrPipeline
     private let permissions = PermissionsManager()
     private let settingsStore = SettingsStore()
     private let hud = FloatingHUD()
-    private lazy var onboarding = OnboardingWindow(store: settingsStore)
     private lazy var settingsWindow = SettingsWindow(store: settingsStore)
 
     private var menuBar: MenuBarController!
@@ -28,7 +27,7 @@ import WhispurrPipeline
 
         menuBar = MenuBarController()
         menuBar.onOpenSettings = { [weak self] in self?.settingsWindow.show() }
-        menuBar.onOpenPermissions = { [weak self] in self?.onboarding.show() }
+        menuBar.onOpenPermissions = { [weak self] in self?.settingsWindow.show(tab: .permissions) }
         menuBar.onToggleEnabled = { [weak self] on in self?.setEnabled(on) }
 
         appState.onChange = { [weak self] state in
@@ -76,11 +75,11 @@ import WhispurrPipeline
         LoginItem.apply(settings.launchAtLogin)
 
         // Re-arm the hotkey the moment Input Monitoring is granted — no relaunch.
-        onboarding.onInputMonitoringGranted = { [weak self] in self?.startHotkey() }
+        settingsWindow.onInputMonitoringGranted = { [weak self] in self?.startHotkey() }
         startHotkey()
 
-        // First run: show the setup wizard until the user finishes it.
-        if !settings.hasCompletedOnboarding { onboarding.show() }
+        // First run: show the setup wizard (a sheet in the single window).
+        if !settings.hasCompletedOnboarding { settingsWindow.showOnboarding() }
 
         // Opt-in update check: one anonymous GitHub request, only when enabled.
         // Surfaces as a menu-bar item if a newer release exists; never installs.
@@ -106,7 +105,7 @@ import WhispurrPipeline
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
         if !flag {
             if settingsStore.settings.hasCompletedOnboarding { settingsWindow.show() }
-            else { onboarding.show() }
+            else { settingsWindow.showOnboarding() }
         }
         return true
     }
