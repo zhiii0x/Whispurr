@@ -26,6 +26,7 @@ let package = Package(
                 ])
             ]
         ),
+        .executableTarget(name: "WhispurrEval", dependencies: ["WhispurrCore", "WhispurrPipeline"]),
         .testTarget(name: "WhispurrCoreTests", dependencies: ["WhispurrCore"]),
         .testTarget(name: "WhispurrPipelineTests", dependencies: ["WhispurrPipeline"]),
     ]
