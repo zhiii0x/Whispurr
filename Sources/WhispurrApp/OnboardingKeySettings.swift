@@ -23,8 +23,8 @@ struct OnboardingKeySettings: View {
                         ForEach(InsertionMode.allCases) { Text(L10n.insertion($0)).tag($0) }
                     }.labelsHidden().fixedSize()
                 }
-                row(L10n.t(.fieldCleanup)) {
-                    Toggle("", isOn: $vm.settings.cleanupEnabled).labelsHidden()
+                row(L10n.t(.fieldSoundCues)) {
+                    Toggle("", isOn: $vm.settings.soundCues).labelsHidden()
                 }
             }
             .padding(16)

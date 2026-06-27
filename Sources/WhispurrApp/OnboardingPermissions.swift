@@ -31,20 +31,11 @@ struct OnboardingPermissions: View {
                 }
             }
 
-            VStack(spacing: 6) {
-                HStack {
-                    Text(L10n.t(.obFnHint)).font(.system(size: 11)).foregroundStyle(.secondary)
-                    Spacer()
-                    Button(L10n.t(.obOpenKeyboard)) { vm.openKeyboardSettings() }
-                        .controlSize(.small).buttonStyle(.borderless)
-                }
-                HStack(spacing: 6) {
-                    Image(systemName: vm.appleIntelligence ? "sparkles" : "sparkles.slash")
-                        .foregroundStyle(vm.appleIntelligence ? UIStyle.accent : .secondary)
-                    Text(vm.appleIntelligence ? L10n.t(.obAIOn) : L10n.t(.obAIOff))
-                        .font(.system(size: 11)).foregroundStyle(.secondary)
-                    Spacer()
-                }
+            HStack {
+                Text(L10n.t(.obFnHint)).font(.system(size: 11)).foregroundStyle(.secondary)
+                Spacer()
+                Button(L10n.t(.obOpenKeyboard)) { vm.openKeyboardSettings() }
+                    .controlSize(.small).buttonStyle(.borderless)
             }
 
             if let p = vm.modelProgress {

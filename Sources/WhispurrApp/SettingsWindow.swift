@@ -81,6 +81,11 @@ enum SettingsTab: Hashable { case general, dictation, vocabulary, permissions, a
 
     func addRule() { settings.vocabulary.append(VocabularyRule(from: "", to: "")) }
     func removeRule(_ id: UUID) { settings.vocabulary.removeAll { $0.id == id } }
+
+    /// Pull the latest persisted settings back in — the menu's quick cleanup toggle
+    /// can change the store while this window is closed. The didSet write-back is a
+    /// no-op when the value already matches (SettingsStore de-dupes).
+    func reloadFromStore() { settings = store.settings }
 }
 
 /// Window root: the settings tabs with the setup wizard layered on as a sheet, so
@@ -133,6 +138,8 @@ struct SettingsView: View {
         .background(UIStyle.softBackground)
         .environment(\.colorScheme, .light)
         .onAppear {
+            vm.reloadFromStore()   // pick up a menu-driven cleanup toggle made while closed
+            perms.refresh()        // so the cleanup section can warn when Apple Intelligence is off
             if vm.settings.checkForUpdatesAutomatically, updates.state == .idle { updates.check() }
         }
     }
@@ -168,16 +175,32 @@ struct SettingsView: View {
                 Toggle(L10n.t(.fieldRestoreClipboard), isOn: $vm.settings.restoreClipboard)
                 LabeledContent(L10n.t(.fieldMaxListen)) {
                     HStack {
-                        Slider(value: $vm.settings.maxListenSeconds, in: 10...300, step: 5)
+                        // Continuous (no `step:`) so macOS doesn't stamp a tick mark per
+                        // step — 10...300 by 5 would be ~59 ticks crammed under the slider.
+                        // Snap the stored value to 5s in the setter instead.
+                        Slider(value: Binding(
+                            get: { vm.settings.maxListenSeconds },
+                            set: { vm.settings.maxListenSeconds = ($0 / 5).rounded() * 5 }
+                        ), in: 10...300)
                             .frame(width: 160)
                         Text("\(Int(vm.settings.maxListenSeconds))s").monospacedDigit().frame(width: 36)
                     }
                 }
             }
-            Section {
+            Section(L10n.t(.secAppleIntelligence)) {
                 Toggle(isOn: $vm.settings.cleanupEnabled) {
                     Text(L10n.t(.fieldCleanup))
                     Text(L10n.t(.noteCleanup)).font(.caption).foregroundStyle(.secondary)
+                }
+                if vm.settings.cleanupEnabled && !perms.appleIntelligence {
+                    HStack(spacing: 8) {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .foregroundStyle(.orange)
+                        Text(L10n.t(.cleanupNeedsAI)).font(.caption).foregroundStyle(.secondary)
+                        Spacer()
+                        Button(L10n.t(.obEnableAI)) { perms.openAppleIntelligenceSettings() }
+                            .controlSize(.small)
+                    }
                 }
             }
         }

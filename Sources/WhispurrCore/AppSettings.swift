@@ -99,8 +99,8 @@ public struct AppSettings: Codable, Equatable, Sendable {
     public init(language: Language = .english,
                 hotkey: HotkeyPreset = .fn,
                 insertionMode: InsertionMode = .paste,
-                cleanupEnabled: Bool = true,
-                soundCues: Bool = true,
+                cleanupEnabled: Bool = false,   // opt-in: needs Apple Intelligence
+                soundCues: Bool = false,
                 launchAtLogin: Bool = false,
                 restoreClipboard: Bool = true,
                 maxListenSeconds: Double = 60,

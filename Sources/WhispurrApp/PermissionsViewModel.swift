@@ -29,6 +29,7 @@ import WhispurrPipeline
     /// 0...1 while the zh-TW model downloads; nil when not downloading.
     @Published private(set) var modelProgress: Double?
     private var timer: Timer?
+    private var pollers = 0
     private var downloading = false
 
     /// Fired once when Input Monitoring transitions ungranted → granted, so the
@@ -49,16 +50,25 @@ import WhispurrPipeline
         }
     }
 
+    /// Ref-counted so two views sharing this VM (e.g. adjacent onboarding steps,
+    /// whose onDisappear can fire AFTER the next step's onAppear) can't tear down a
+    /// live timer mid-transition. Always refreshes on entry; the timer runs while
+    /// any caller still needs it and is invalidated only at zero.
     func startPolling() {
-        timer?.invalidate()                 // idempotent: never run two timers
+        pollers += 1
         refresh()
+        guard timer == nil else { return }
         let t = Timer(timeInterval: 1.0, repeats: true) { [weak self] _ in
             Task { @MainActor in self?.refresh() }
         }
         RunLoop.main.add(t, forMode: .common)
         timer = t
     }
-    func stopPolling() { timer?.invalidate(); timer = nil }
+    func stopPolling() {
+        pollers = max(0, pollers - 1)
+        guard pollers == 0 else { return }
+        timer?.invalidate(); timer = nil
+    }
 
     func refresh() {
         let was = snapshot
@@ -102,6 +112,11 @@ import WhispurrPipeline
 
     func openKeyboardSettings() {
         open("x-apple.systempreferences:com.apple.Keyboard-Settings.extension")
+    }
+    /// Opens the "Apple Intelligence & Siri" pane so the user can enable the
+    /// on-device model that powers cleanup.
+    func openAppleIntelligenceSettings() {
+        open("x-apple.systempreferences:com.apple.Siri-Settings.extension")
     }
     private func openPane(_ anchor: String) {
         open("x-apple.systempreferences:com.apple.preference.security?\(anchor)")

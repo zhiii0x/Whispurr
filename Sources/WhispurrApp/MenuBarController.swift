@@ -22,10 +22,12 @@ import WhispurrCore
     private var lastTranscript = ""
     private var enabled = true
     private var aiAvailable = false
+    private var cleanupEnabled = true
     private var updateVersion: String?
     private var updateURL: URL?
 
     var onToggleEnabled: ((Bool) -> Void)?
+    var onToggleCleanup: ((Bool) -> Void)?
     var onOpenSettings: (() -> Void)?
     var onOpenPermissions: (() -> Void)?
 
@@ -46,9 +48,26 @@ import WhispurrCore
         copyItem.isEnabled = !text.isEmpty
     }
 
+    /// Whether the on-device cleanup model is available (gates the toggle).
     func setAIAvailable(_ available: Bool) {
         aiAvailable = available
-        aiItem.title = available ? L10n.t(.cleanupOn) : L10n.t(.cleanupOff)
+        refreshCleanupItem()
+    }
+
+    /// Reflect the user's cleanup preference (the menu's quick on/off "fast mode").
+    func setCleanupEnabled(_ on: Bool) {
+        cleanupEnabled = on
+        refreshCleanupItem()
+    }
+
+    /// The cleanup row is a checkmark toggle: checked when cleanup will actually
+    /// run (enabled AND the model is available), and disabled when Apple
+    /// Intelligence is off (toggling it would have no effect).
+    private func refreshCleanupItem() {
+        aiItem.title = L10n.t(.fieldCleanup)
+        aiItem.state = (cleanupEnabled && aiAvailable) ? .on : .off
+        aiItem.isEnabled = aiAvailable
+        aiItem.toolTip = aiAvailable ? nil : L10n.t(.obAIOff)
     }
 
     func setEnabled(_ on: Bool) {
@@ -91,7 +110,7 @@ import WhispurrCore
         copyItem.keyEquivalent = "c"; copyItem.isEnabled = false
         menu.addItem(copyItem)
         menu.addItem(.separator())
-        aiItem.isEnabled = false
+        aiItem.target = self; aiItem.action = #selector(toggleCleanup)
         menu.addItem(aiItem)
         toggleItem.target = self; toggleItem.action = #selector(toggleEnabled)
         menu.addItem(toggleItem)
@@ -125,6 +144,13 @@ import WhispurrCore
         enabled.toggle()
         setEnabled(enabled)
         onToggleEnabled?(enabled)
+    }
+
+    @objc private func toggleCleanup() {
+        guard aiAvailable else { return }
+        cleanupEnabled.toggle()
+        refreshCleanupItem()
+        onToggleCleanup?(cleanupEnabled)
     }
 
     @objc private func copyLast() {

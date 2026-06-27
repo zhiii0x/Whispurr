@@ -15,17 +15,19 @@ import WhispurrCore
         // HUD
         case hudListening, hudProcessing, hudHeardNothing
         // Settings
-        case settingsTitle, secInput, fieldLanguage, fieldHotkey, fieldInsertion
-        case fieldRestoreClipboard, secCleanup, fieldCleanup, noteCleanup
-        case secBehavior, fieldSoundCues, fieldLaunchAtLogin, fieldMaxListen
+        case settingsTitle, fieldLanguage, fieldHotkey, fieldInsertion
+        case fieldRestoreClipboard, fieldCleanup, noteCleanup, cleanupNeedsAI
+        case secAppleIntelligence
+        case fieldSoundCues, fieldLaunchAtLogin, fieldMaxListen
         case secVocab, vocabFrom, vocabTo, caseSensitive, addRule
         case secAbout, aboutMadeBy
         case fieldAutoUpdate, checkUpdates, upToDate, updateFailed, downloadUpdate
         case menuUpdateAvailable
         case tabGeneral, tabDictation, tabVocabulary, replayGuide, replayGuideButton
         // Onboarding
-        case obTagline, obGrant, obFnHint, obOpenKeyboard, obAIOn, obAIOff
-        case obModelDownloading, obStart, obStartBlocked, obWindowTitle
+        case obTagline, obGrant, obFnHint, obOpenKeyboard, obAIOn, obAIOff, obEnableAI
+        case obAITitle, obAIBody
+        case obModelDownloading
         // Wizard
         case navBack, navNext, navFinish, navClose
         case howTitle, howStep1, howStep2, howStep3, howEscTip
@@ -87,16 +89,16 @@ import WhispurrCore
         case .hudHeardNothing:return ("Didn't catch that", "沒聽到聲音")
         // Settings
         case .settingsTitle:  return ("Whispurr Settings", "Whispurr 設定")
-        case .secInput:       return ("Input", "輸入")
         case .fieldLanguage:  return ("Language", "語言")
         case .fieldHotkey:    return ("Hotkey", "熱鍵")
         case .fieldInsertion: return ("Insertion", "插入方式")
         case .fieldRestoreClipboard: return ("Restore clipboard after paste", "插入後還原剪貼簿")
-        case .secCleanup:     return ("Cleanup", "整稿")
         case .fieldCleanup:   return ("Polish with Apple Intelligence", "用 Apple Intelligence 自動順稿")
-        case .noteCleanup:    return ("When off, the raw transcript is inserted (faster, no LLM).",
-                                      "關閉時直接插入原始辨識稿（較快、不經過 LLM）。")
-        case .secBehavior:    return ("Behavior", "行為")
+        case .noteCleanup:    return ("Adds punctuation & splits sentences via Apple Intelligence. Off = faster, raw text.",
+                                      "用 Apple Intelligence 補標點、斷句。關閉則較快、直接插入原始稿。")
+        case .cleanupNeedsAI: return ("Apple Intelligence is off, so cleanup won't run.",
+                                      "Apple Intelligence 未開啟，順稿不會生效。")
+        case .secAppleIntelligence: return ("Apple Intelligence", "Apple Intelligence")
         case .fieldSoundCues: return ("Play a sound on start / stop", "開始/結束時播放提示音")
         case .fieldLaunchAtLogin: return ("Launch at login", "開機時自動啟動")
         case .fieldMaxListen: return ("Max recording length", "單次最長錄音")
@@ -127,13 +129,14 @@ import WhispurrCore
         case .obOpenKeyboard: return ("Open Keyboard Settings", "開啟鍵盤設定")
         case .obAIOn:         return ("Apple Intelligence is on — transcripts are auto-polished.",
                                       "Apple Intelligence 已啟用 — 會自動順稿。")
-        case .obAIOff:        return ("Apple Intelligence is off — the raw transcript is inserted.",
-                                      "Apple Intelligence 未啟用 — 會插入未整理的原始稿。")
+        case .obAIOff:        return ("Apple Intelligence is off — cleanup is optional and needs it.",
+                                      "Apple Intelligence 未啟用 — 順稿為選用功能，需要它才能運作。")
+        case .obEnableAI:     return ("Enable…", "前往開啟")
+        case .obAITitle:      return ("Auto-polish (optional)", "自動順稿（選用）")
+        case .obAIBody:       return ("Optionally clean up your dictation — add punctuation, split sentences, remove fillers — with Apple's on-device model. Off by default; turn on Apple Intelligence to use it.",
+                                      "選用功能：用 Apple 端上模型自動幫你補標點、斷句、去除贅字。預設關閉；開啟 Apple Intelligence 後即可使用。")
         case .obModelDownloading: return ("Downloading speech model… %ld%% (one-time)",
                                           "下載語音模型中… %ld%%（一次性）")
-        case .obStart:        return ("Get started", "開始使用")
-        case .obStartBlocked: return ("Grant the required permissions first", "請先完成必要權限")
-        case .obWindowTitle:  return ("Welcome to Whispurr", "歡迎使用 Whispurr")
         // Wizard
         case .navBack:        return ("Back", "上一步")
         case .navNext:        return ("Next", "下一步")

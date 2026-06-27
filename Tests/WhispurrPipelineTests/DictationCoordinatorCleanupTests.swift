@@ -28,6 +28,7 @@ final class DictationCoordinatorCleanupTests: XCTestCase {
         var shown: String?
         c.onTranscript = { shown = $0 }
         c.activate()
+        c.updateSettings(AppSettings(cleanupEnabled: true))   // cleanup is opt-in (default off)
 
         hk.firePress(); await c.waitForStart()
         eng.emitFinal("呃 我想做 cloud")

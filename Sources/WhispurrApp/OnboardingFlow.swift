@@ -6,7 +6,7 @@ struct OnboardingFlow: View {
     let onFinish: () -> Void
 
     @State private var step = 0
-    private let total = 5
+    private let total = 6
 
     private var canAdvance: Bool {
         step == 1 ? perms.canStart : true   // permissions step gates Next
@@ -18,8 +18,9 @@ struct OnboardingFlow: View {
                 switch step {
                 case 0: OnboardingHowItWorks()
                 case 1: OnboardingPermissions(vm: perms)
-                case 2: OnboardingKeySettings(vm: settingsVM)
-                case 3: OnboardingTryIt()
+                case 2: OnboardingAppleIntelligence(perms: perms, settingsVM: settingsVM)
+                case 3: OnboardingKeySettings(vm: settingsVM)
+                case 4: OnboardingTryIt()
                 default: OnboardingDone()
                 }
             }

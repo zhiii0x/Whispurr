@@ -29,6 +29,7 @@ import WhispurrPipeline
         menuBar.onOpenSettings = { [weak self] in self?.settingsWindow.show() }
         menuBar.onOpenPermissions = { [weak self] in self?.settingsWindow.show(tab: .permissions) }
         menuBar.onToggleEnabled = { [weak self] on in self?.setEnabled(on) }
+        menuBar.onToggleCleanup = { [weak self] on in self?.setCleanupEnabled(on) }
 
         appState.onChange = { [weak self] state in
             guard let self else { return }
@@ -51,6 +52,7 @@ import WhispurrPipeline
         coordinator.onEmpty = { [weak self] in self?.hud.flashMessage(L10n.t(.hudHeardNothing)) }
 
         menuBar.setAIAvailable(permissions.snapshot().appleIntelligence)
+        menuBar.setCleanupEnabled(settings.cleanupEnabled)
         appState.set(.idle)
 
         // Apply settings changes from the Settings window (diffed in apply()).
@@ -74,7 +76,10 @@ import WhispurrPipeline
         FoundationModelsCleanup.prewarmIfAvailable()
         LoginItem.apply(settings.launchAtLogin)
 
-        // Re-arm the hotkey the moment Input Monitoring is granted — no relaunch.
+        // Re-arm the hotkey when Input Monitoring is granted while a permissions
+        // view is polling. As a backstop, applicationDidBecomeActive re-checks on
+        // every app activation (e.g. returning from System Settings); macOS may
+        // still need a relaunch for a fresh event-tap grant to take effect.
         settingsWindow.onInputMonitoringGranted = { [weak self] in self?.startHotkey() }
         startHotkey()
 
@@ -94,6 +99,15 @@ import WhispurrPipeline
 
     func applicationWillTerminate(_ notification: Notification) {
         if let escMonitor { NSEvent.removeMonitor(escMonitor) }
+    }
+
+    /// Re-sync permission-derived state whenever the app comes forward — covers the
+    /// user enabling Apple Intelligence or granting Input Monitoring in System
+    /// Settings and switching back. `startHotkey()` is idempotent (no-op if armed).
+    func applicationDidBecomeActive(_ notification: Notification) {
+        let snap = permissions.snapshot()
+        menuBar.setAIAvailable(snap.appleIntelligence)
+        if snap.inputMonitoring { startHotkey() }
     }
 
     @objc func openSettingsFromMenu() { settingsWindow.show() }
@@ -125,6 +139,12 @@ import WhispurrPipeline
         menuBar.setEnabled(on)
     }
 
+    /// Toggle the on-device cleanup preference (the menu's quick "fast mode" switch).
+    /// Persisting fires the store's onChange → apply() → coordinator.updateSettings.
+    private func setCleanupEnabled(_ on: Bool) {
+        settingsStore.update { $0.cleanupEnabled = on }
+    }
+
     /// Apply a settings change, doing the minimum work (so editing a vocabulary
     /// text field doesn't restart the event tap on every keystroke).
     private func apply(_ s: AppSettings) {
@@ -146,6 +166,9 @@ import WhispurrPipeline
         }
         if old?.launchAtLogin != s.launchAtLogin {
             LoginItem.apply(s.launchAtLogin)
+        }
+        if old?.cleanupEnabled != s.cleanupEnabled {
+            menuBar.setCleanupEnabled(s.cleanupEnabled)   // keep the menu toggle in sync
         }
         lastApplied = s
     }
