@@ -18,7 +18,10 @@
 <p align="center">
   <a href="https://github.com/zhiii0x/whispurr/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/zhiii0x/whispurr?color=3b82f6"></a>
   <a href="https://github.com/zhiii0x/whispurr/releases/latest"><img alt="Requires macOS 26 Tahoe" src="https://img.shields.io/badge/macOS-26%20Tahoe-7c6aa6"></a>
-  <a href="https://buymeacoffee.com/nono.today"><img alt="Buy Me a Coffee" src="https://img.shields.io/badge/Buy%20Me%20a%20Coffee-nono.today-FFDD00?logo=buymeacoffee&logoColor=black"></a>
+</p>
+
+<p align="center">
+  <a href="https://buymeacoffee.com/nono.today"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" height="44" alt="Buy Me a Coffee"></a>
 </p>
 
 <p align="center">
@@ -65,11 +68,11 @@ The app is **Developer-ID signed and notarized by Apple**, so the DMG opens with
 <tr>
 <td width="50%" valign="top">
   <img src="assets/onboarding.png" alt="First-run permissions window">
-  <p align="center"><em>Guided first-run permissions</em></p>
+  <p align="center"><em>Guided setup — permissions + optional Apple Intelligence</em></p>
 </td>
 <td width="50%" valign="top">
   <img src="assets/settings.png" alt="Settings window">
-  <p align="center"><em>Settings — hotkey, insertion, cleanup, vocabulary, language</em></p>
+  <p align="center"><em>One settings window — dictation, cleanup, vocabulary, permissions</em></p>
 </td>
 </tr>
 </table>
@@ -157,13 +160,6 @@ Three layers, dependency-injected behind protocols and unit-tested:
 
 ---
 
-## Support
-
-If Whispurr is useful to you, you can support its development:
-
-<a href="https://buymeacoffee.com/nono.today"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" height="44" alt="Buy Me a Coffee"></a>
----
-
 <a id="traditional-chinese"></a>
 
 <p align="center">
@@ -184,7 +180,10 @@ If Whispurr is useful to you, you can support its development:
 <p align="center">
   <a href="https://github.com/zhiii0x/whispurr/releases/latest"><img alt="最新版本" src="https://img.shields.io/github/v/release/zhiii0x/whispurr?color=3b82f6"></a>
   <a href="https://github.com/zhiii0x/whispurr/releases/latest"><img alt="需要 macOS 26 Tahoe" src="https://img.shields.io/badge/macOS-26%20Tahoe-7c6aa6"></a>
-  <a href="https://buymeacoffee.com/nono.today"><img alt="請我喝咖啡" src="https://img.shields.io/badge/Buy%20Me%20a%20Coffee-nono.today-FFDD00?logo=buymeacoffee&logoColor=black"></a>
+</p>
+
+<p align="center">
+  <a href="https://buymeacoffee.com/nono.today"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" height="44" alt="Buy Me a Coffee"></a>
 </p>
 
 <p align="center">
@@ -230,11 +229,11 @@ If Whispurr is useful to you, you can support its development:
 <tr>
 <td width="50%" valign="top">
   <img src="assets/onboarding.png" alt="首次啟動的權限視窗">
-  <p align="center"><em>首次啟動的權限引導</em></p>
+  <p align="center"><em>首次啟動的設定引導——權限 + 選用的 Apple Intelligence</em></p>
 </td>
 <td width="50%" valign="top">
   <img src="assets/settings.png" alt="設定視窗">
-  <p align="center"><em>設定——熱鍵、插入方式、整稿、詞彙、語言</em></p>
+  <p align="center"><em>單一設定視窗——聽寫、整稿、詞彙、權限</em></p>
 </td>
 </tr>
 </table>
@@ -320,9 +319,3 @@ MAKE_DMG=1 VERSION=0.1.0 scripts/package.sh   # -> dist/Whispurr-0.1.0.dmg
 - **`WhispurrPipeline`** — 系統整合：熱鍵、權限、音訊、辨識、整稿、插入、coordinator。
 - **`WhispurrApp`** — AppKit 選單列 + SwiftUI 面板，從設定快照在 `AppAssembly` 組裝。
 
----
-
-## 支持
-
-假如你還喜歡的話，可以買一杯咖啡請我喝 XD
-<a href="https://buymeacoffee.com/nono.today"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" height="44" alt="Buy Me a Coffee"></a>
