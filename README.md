@@ -26,9 +26,9 @@
 </p>
 
 Hold **`fn`**, speak Mandarin with English tech terms mixed in, release — your words are
-recognised **on-device**, tidied up **on-device** (fillers removed, punctuation fixed,
-English terms kept, Traditional Chinese out), and inserted at your cursor in whatever app
-is focused. Nothing — no audio, no text — ever leaves your Mac.
+recognised **on-device** and inserted at your cursor in whatever app is focused. Optionally,
+**on-device** Apple Intelligence tidies them up (punctuation, sentence breaks, fillers removed —
+English terms kept, Traditional Chinese out). Nothing — no audio, no text — ever leaves your Mac.
 
 ---
 
@@ -52,7 +52,7 @@ The app is **Developer-ID signed and notarized by Apple**, so the DMG opens with
 
 - **Fully local / offline.** On-device speech recognition + on-device LLM cleanup. No cloud, no account, no telemetry. The recognised text is never even written to the system log.
 - **Mandarin + English code-switching**, first-class. *"幫我 push 這個 commit"* stays exactly that — Traditional Chinese with English tech terms intact.
-- **Always-polished output.** Apple Intelligence removes fillers (嗯/呃/um/uh), fixes punctuation, tidies grammar — edit-only, never inventing. (If Apple Intelligence is off, the raw transcript is inserted instead.)
+- **Optional polish (opt-in).** Turn on Apple Intelligence cleanup to remove fillers (嗯/呃/um/uh), add punctuation, and split run-on sentences (斷句) — edit-only, never inventing. Off by default, so dictation works immediately even without Apple Intelligence (the raw transcript is inserted).
 - **Push-to-talk.** Hold a key, release to insert. A floating HUD shows the live transcript while you speak.
 - **A delightful menu-bar cat** that puts on headphones to listen and closes its eyes to think.
 - **English / 中文 UI**, switchable in Settings (defaults to English).
@@ -101,7 +101,7 @@ fn > AudioCapture > SpeechTranscriber > TextCleanup > Vocabulary > TextInserter
 | **Language** | English / 中文 (UI only — dictation output stays Traditional Chinese) |
 | **Hotkey** | fn, Right Option, or Right Command |
 | **Insertion** | Paste (Command-V), or Simulate typing (no clipboard, IME-safe) |
-| **Cleanup** | On (Apple Intelligence) / Off (raw, faster) |
+| **Cleanup** | Off by default — opt in to polish with Apple Intelligence (punctuation, 斷句, filler removal) |
 | **Vocabulary** | Find/replace rules applied after cleanup (and fed back as recognizer hints) |
 | **Also** | sound cues, launch-at-login, max recording length, restore-clipboard |
 
@@ -109,9 +109,14 @@ fn > AudioCapture > SpeechTranscriber > TextCleanup > Vocabulary > TextInserter
 
 ## Requirements
 
-- **macOS 26 (Tahoe)** on **Apple Silicon**
-- **Apple Intelligence** enabled for on-device cleanup *(optional — without it, the raw transcript is inserted)*
-- The zh-TW speech model downloads once on first run (with a progress bar)
+**Required**
+- **macOS 26 (Tahoe)** on an **Apple Silicon** Mac (M1 or later)
+- Microphone, Speech Recognition, Input Monitoring (for `fn`), and Accessibility (to insert text) permissions
+
+**Recommended**
+- **Apple Intelligence** enabled for the optional on-device cleanup (punctuation, 斷句, filler removal). Off by default — the app works without it.
+- For snappy cleanup, an **M4-class** Mac. Cleanup runs on the Neural Engine, which is roughly the same across M1 / M1 Pro / M1 Max but ~3× faster on M4 — so the chip **generation** matters more than the tier. M1–M3 work fine, but cleanup adds noticeable latency.
+- The zh-TW speech model downloads once on first run (one-time, with a progress bar).
 
 ---
 
@@ -154,7 +159,7 @@ Three layers, dependency-injected behind protocols and unit-tested:
 
 ## Support
 
-If Multitrack Tap is useful to you, you can support its development:
+If Whispurr is useful to you, you can support its development:
 
 <a href="https://buymeacoffee.com/nono.today"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" height="44" alt="Buy Me a Coffee"></a>
 ---
@@ -186,8 +191,8 @@ If Multitrack Tap is useful to you, you can support its development:
   <img src="assets/hud.png" width="540" alt="即時聽寫 HUD，顯示中英混用">
 </p>
 
-按住 **`fn`**，用中文夾雜英文技術詞彙說話，放開——你說的話會在**本機**辨識、在**本機**整理
-（移除口頭禪、修正標點、保留英文詞彙、輸出繁體中文），然後插入到目前游標所在的任何 app。
+按住 **`fn`**，用中文夾雜英文技術詞彙說話，放開——你說的話會在**本機**辨識，然後插入到目前游標所在的任何 app。
+另可選擇開啟**本機** Apple Intelligence 整稿（補標點、斷句、移除口頭禪；英文詞彙原樣保留、輸出繁體中文）。
 沒有任何聲音或文字會離開你的 Mac。
 
 ---
@@ -212,7 +217,7 @@ If Multitrack Tap is useful to you, you can support its development:
 
 - **完全本機 / 離線。** 本機語音辨識 + 本機 LLM 整稿。無雲端、無帳號、無遙測。辨識出來的文字連系統 log 都不會寫入。
 - **中英 code-switching 一等公民。** 「幫我 push 這個 commit」就是這樣——繁體中文，英文技術詞彙原樣保留。
-- **永遠整理過的輸出。** Apple Intelligence 移除口頭禪（嗯／呃／um／uh）、修正標點、順過文法——只做編輯、絕不杜撰。（若 Apple Intelligence 關閉，則插入原始稿。）
+- **選用的自動整稿。** 開啟 Apple Intelligence 整稿即可移除口頭禪（嗯／呃／um／uh）、補上標點、把長句斷句——只做編輯、絕不杜撰。**預設關閉**,所以沒開 Apple Intelligence 也能直接用（插入原始稿）。
 - **按住說話（push-to-talk）。** 按住一個鍵、放開即插入。說話時浮動 HUD 顯示即時逐字稿。
 - **討喜的選單列貓咪**，聆聽時戴上耳機、思考時閉上眼睛。
 - **英文 / 中文介面**，可在設定切換（預設英文）。
@@ -261,7 +266,7 @@ fn > AudioCapture > SpeechTranscriber > TextCleanup > Vocabulary > TextInserter
 | **語言** | 英文 / 中文（僅介面——口述輸出維持繁體中文）|
 | **熱鍵** | fn、右 Option、右 Command |
 | **插入方式** | 貼上（Command-V），或模擬輸入（不碰剪貼簿、適合 IME）|
-| **整稿** | 開（Apple Intelligence）/ 關（原始稿、較快）|
+| **整稿** | 預設關閉——可選擇開啟，用 Apple Intelligence 補標點、斷句、去贅字 |
 | **詞彙** | 整稿後套用的 find/replace 規則（同時回饋給辨識器當提示）|
 | **其他** | 提示音、開機自動啟動、單次最長錄音、插入後還原剪貼簿 |
 
@@ -269,9 +274,14 @@ fn > AudioCapture > SpeechTranscriber > TextCleanup > Vocabulary > TextInserter
 
 ## 系統需求
 
-- **macOS 26（Tahoe）** 搭配 **Apple Silicon**
-- 本機整稿需啟用 **Apple Intelligence**（選用——沒有的話會插入原始稿）
-- 繁中語音模型於首次使用時下載一次（有進度條）
+**必要**
+- **macOS 26（Tahoe）**，且為 **Apple Silicon** Mac（M1 以上）
+- 麥克風、語音辨識、輸入監控（fn 熱鍵）、輔助使用（插入文字）權限
+
+**建議**
+- 開啟 **Apple Intelligence** 以使用選用的本機整稿（補標點、斷句、去贅字）。**預設關閉**——沒開也能用。
+- 想要整稿夠順,建議 **M4 世代** 的 Mac。整稿跑在 Neural Engine 上,而 ANE 在 M1／M1 Pro／M1 Max 其實差不多,到 M4 才約快 3 倍——所以**晶片世代**比等級（Max/Ultra）更重要。M1～M3 能用,但整稿延遲較明顯。
+- 繁中語音模型於首次使用時下載一次（一次性,有進度條）。
 
 ---
 
