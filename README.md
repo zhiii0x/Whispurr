@@ -228,11 +228,11 @@ Three layers, dependency-injected behind protocols and unit-tested:
 <table>
 <tr>
 <td width="50%" valign="top">
-  <img src="assets/onboarding.png" alt="首次啟動的權限視窗">
+  <img src="assets/onboarding-zh.png" alt="首次啟動的設定引導">
   <p align="center"><em>首次啟動的設定引導——權限 + 選用的 Apple Intelligence</em></p>
 </td>
 <td width="50%" valign="top">
-  <img src="assets/settings.png" alt="設定視窗">
+  <img src="assets/settings-zh.png" alt="設定視窗">
   <p align="center"><em>單一設定視窗——聽寫、整稿、詞彙、權限</em></p>
 </td>
 </tr>
