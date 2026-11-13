@@ -22,6 +22,9 @@ import WhispurrCore
     public var onPartial: ((String) -> Void)?
     /// Called when a cycle finished but nothing was recognized (silence / misfire).
     public var onEmpty: (() -> Void)?
+    /// Called (after the state moves to `.error`) with the error that ended a
+    /// cycle, so the app can tell the user what went wrong.
+    public var onError: ((Error) -> Void)?
 
     private var settings = AppSettings()
 
@@ -30,6 +33,12 @@ import WhispurrCore
     private var cycleTask: Task<Void, Never>?
     private var failResetTask: Task<Void, Never>?
     private var listenWatchdog: Task<Void, Never>?
+
+    /// Identifies the current dictation cycle. Bumped on every press, cancel and
+    /// failure. Async work captures the id it started with and drops its result
+    /// once it no longer matches — so a cancelled cycle whose finalize/cleanup is
+    /// still in flight can never insert its text into (or idle out) a later cycle.
+    private var cycle = 0
 
     public init(appState: AppState, hotkey: HotkeySource, engine: TranscriptionEngine,
                 cleanup: TextCleanup, inserter: TextInserter) {
@@ -51,26 +60,45 @@ import WhispurrCore
     }
 
     public func start() throws { try hotkey.start() }
-    public func stop() { hotkey.stop() }
+
+    /// Stop listening for the hotkey (the menu's Pause). A take that is still
+    /// being recorded is abandoned: with the tap gone its key-up can never arrive,
+    /// which would otherwise leave the mic open until the max-listen watchdog.
+    public func stop() {
+        hotkey.stop()
+        if machine.state == .listening { cancel() }
+    }
 
     private func handlePress() {
         guard machine.state == .idle else { return }
+        cycle &+= 1
+        let id = cycle
         Log.pipeline.info("▶︎ key down → recording")
         failResetTask?.cancel(); failResetTask = nil
         finalText = ""
         appState.set(machine.handle(.pushToTalkDown))            // → .listening
-        startListenWatchdog()
+        startListenWatchdog(cycle: id)
         startTask = Task { [weak self] in
             guard let self else { return }
             do {
                 try await self.engine.start(
-                    onPartial: { [weak self] p in self?.onPartial?(p) },
+                    onPartial: { [weak self] p in
+                        guard let self, self.cycle == id else { return }
+                        self.onPartial?(p)
+                    },
                     onFinal: { [weak self] f in
-                        guard let self else { return }
+                        guard let self, self.cycle == id else { return }
                         self.finalText = TranscriptJoiner.join(self.finalText, f)
+                    },
+                    onFailure: { [weak self] error in
+                        // Only while still recording: a failure during finalize is
+                        // left to the cycle, which inserts whatever was captured.
+                        guard let self, self.cycle == id, self.machine.state == .listening else { return }
+                        self.fail(error)
                     }
                 )
             } catch {
+                guard self.cycle == id else { return }           // cancelled meanwhile — not a failure
                 self.fail(error)
             }
         }
@@ -78,12 +106,13 @@ import WhispurrCore
 
     /// Cap a single utterance so a stuck-down / missed key-up can't hold the mic
     /// (and the cat) in .listening forever.
-    private func startListenWatchdog() {
+    private func startListenWatchdog(cycle id: Int) {
         listenWatchdog?.cancel()
         let limit = max(5, settings.maxListenSeconds)
         listenWatchdog = Task { [weak self] in
             try? await Task.sleep(for: .seconds(limit))
-            guard let self, self.machine.state == .listening else { return }
+            guard !Task.isCancelled, let self, self.cycle == id,
+                  self.machine.state == .listening else { return }
             Log.pipeline.notice("max listen (\(Int(limit))s) reached — auto-finalizing")
             self.handleRelease()
         }
@@ -91,6 +120,7 @@ import WhispurrCore
 
     private func handleRelease() {
         guard machine.state == .listening else { return }
+        let id = cycle
         listenWatchdog?.cancel(); listenWatchdog = nil
         Log.pipeline.info("⏹ key up → finalizing")
         appState.set(machine.handle(.pushToTalkUp))             // → .processing
@@ -99,14 +129,14 @@ import WhispurrCore
         cycleTask = Task { [weak self] in
             guard let self else { return }
             await self.startTask?.value                          // ensure start settled
-            guard self.machine.state == .processing else { return }   // failed/cancelled meanwhile
+            guard self.isLive(id) else { return }
             do {
                 try await self.engine.stopAndFinalize()
             } catch {
                 Log.pipeline.error("finalize failed: \(String(describing: error), privacy: .public)")
             }
             let tFinalized = clock.now
-            guard self.machine.state == .processing else { return }   // cancelled during finalize
+            guard self.isLive(id) else { return }
             let text = self.finalText.trimmingCharacters(in: .whitespacesAndNewlines)
             if text.isEmpty {
                 self.appState.set(self.machine.handle(.transcriptionFinished))   // → .idle
@@ -116,10 +146,11 @@ import WhispurrCore
             var cleaned = text
             if self.settings.cleanupEnabled {
                 cleaned = await self.cleanup.clean(text, onPartial: { [weak self] p in
-                    self?.onPartial?(p)                          // stream cleanup into the HUD
+                    guard let self, self.cycle == id else { return }   // stream cleanup into the HUD
+                    self.onPartial?(p)
                 })
             }
-            guard self.machine.state == .processing else { return }   // cancelled during cleanup → don't insert
+            guard self.isLive(id) else { return }                         // cancelled during cleanup → don't insert
             let final = VocabularyManager(rules: self.settings.vocabulary).apply(to: cleaned)
             self.inserter.insert(final)
             self.onTranscript?(final)                            // surface the final text
@@ -130,12 +161,19 @@ import WhispurrCore
         }
     }
 
-    /// User aborted (Esc / Cmd-.): stop everything and discard without inserting.
+    /// Is cycle `id` still the one being processed (not cancelled, failed or
+    /// superseded)? Checked after every await in the release path.
+    private func isLive(_ id: Int) -> Bool {
+        !Task.isCancelled && cycle == id && machine.state == .processing
+    }
+
+    /// User aborted (Esc): stop everything and discard without inserting.
     public func cancel() {
         guard machine.state == .listening || machine.state == .processing else { return }
         Log.pipeline.info("✦ cancelled by user")
+        cycle &+= 1                                              // orphan any in-flight work
         listenWatchdog?.cancel(); listenWatchdog = nil
-        startTask?.cancel(); cycleTask?.cancel()
+        startTask?.cancel(); cycleTask?.cancel()                 // cleanup forwards this to the LLM
         engine.cancel()
         finalText = ""
         appState.set(machine.handle(.cancel))                   // → .idle, no insert
@@ -143,13 +181,16 @@ import WhispurrCore
 
     private func fail(_ error: Error) {
         Log.pipeline.error("✖︎ error: \(String(describing: error), privacy: .public)")
+        cycle &+= 1                                              // orphan the failed cycle's work
         listenWatchdog?.cancel(); listenWatchdog = nil
+        startTask?.cancel(); cycleTask?.cancel()
         engine.cancel()
         appState.set(machine.handle(.failed(String(describing: error))))   // → .error
+        onError?(error)
         failResetTask?.cancel()
         failResetTask = Task { [weak self] in
             try? await Task.sleep(for: Timeouts.errorReset)
-            guard let self, case .error = self.machine.state else { return }   // only reset if still erroring
+            guard !Task.isCancelled, let self, case .error = self.machine.state else { return }
             self.appState.set(self.machine.handle(.reset))                  // → .idle
         }
     }

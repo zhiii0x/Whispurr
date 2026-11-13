@@ -60,7 +60,14 @@ import WhispurrCore
         let watchdog = Task { try? await Task.sleep(for: Timeouts.cleanupWatchdog); work.cancel() }
         defer { watchdog.cancel() }
         do {
-            let out = try await work.value
+            // `work` is unstructured, so it would NOT inherit our caller's
+            // cancellation (Esc during cleanup) — forward it explicitly, or the
+            // model keeps generating into the HUD for up to the watchdog limit.
+            let out = try await withTaskCancellationHandler {
+                try await work.value
+            } onCancel: {
+                work.cancel()
+            }
             guard !out.isEmpty else { return text }
             // Guardrail: edit-only output stays close to the input length. A much
             // longer result means the model explained/answered → insert raw.
@@ -78,7 +85,11 @@ import WhispurrCore
             }
             return out
         } catch {
-            Log.cleanup.error("cleanup failed — inserting raw")
+            if Task.isCancelled {
+                Log.cleanup.info("cleanup cancelled")
+            } else {
+                Log.cleanup.error("cleanup failed — inserting raw")
+            }
             return text
         }
     }
