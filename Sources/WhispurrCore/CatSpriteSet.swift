@@ -12,7 +12,7 @@ public struct CatSpriteSet: Sendable {
         case .idle:       return ["idle"]
         case .listening:  return ["listening"]
         case .processing: return ["processing"]
-        case .error:      return ["idle"] // reuse idle art + a badge until a dedicated frame exists
+        case .error:      return ["idle"] // idle art; CatAnimator overlays an error badge
         }
     }
 

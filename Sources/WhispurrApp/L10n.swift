@@ -1,5 +1,6 @@
 import Foundation
 import WhispurrCore
+import WhispurrPipeline
 
 /// Lightweight in-app localization driven by the user's Language setting (NOT
 /// the system locale), defaulting to English. Set `L10n.lang` once at launch and
@@ -14,6 +15,7 @@ import WhispurrCore
         case pause, resume, menuSettings, menuPermissions, quit
         // HUD
         case hudListening, hudProcessing, hudHeardNothing
+        case errMic, errSpeech, errModel, errLocale, errAudio, errRecognition, errGeneric
         // Settings
         case settingsTitle, fieldLanguage, fieldHotkey, fieldInsertion
         case fieldRestoreClipboard, fieldCleanup, noteCleanup, cleanupNeedsAI
@@ -60,6 +62,19 @@ import WhispurrCore
         }
     }
 
+    /// User-facing text for an error that ended a dictation cycle.
+    static func dictationError(_ error: Error) -> String {
+        guard let e = error as? AppleSpeechTranscriberEngine.EngineError else { return t(.errGeneric) }
+        switch e {
+        case .micDenied:                         return t(.errMic)
+        case .speechDenied:                      return t(.errSpeech)
+        case .modelUnavailable:                  return t(.errModel)
+        case .localeUnsupported:                 return t(.errLocale)
+        case .audioInputFailed, .noAudioFormat:  return t(.errAudio)
+        case .recognitionFailed:                 return t(.errRecognition)
+        }
+    }
+
     static func insertion(_ mode: InsertionMode) -> String {
         switch (mode, lang) {
         case (.paste, .english): return "Paste (⌘V, most compatible)"
@@ -87,6 +102,17 @@ import WhispurrCore
         case .hudListening:   return ("Listening…", "聆聽中…")
         case .hudProcessing:  return ("Cleaning up…", "整理中…")
         case .hudHeardNothing:return ("Didn't catch that", "沒聽到聲音")
+        case .errMic:         return ("Microphone access is off — enable it in Permissions",
+                                      "麥克風權限未開啟，請到「權限」開啟")
+        case .errSpeech:      return ("Speech Recognition is off — enable it in Permissions",
+                                      "語音辨識權限未開啟，請到「權限」開啟")
+        case .errModel:       return ("Couldn't download the speech model — check your connection",
+                                      "無法下載語音模型，請確認網路連線")
+        case .errLocale:      return ("Chinese (Taiwan) speech isn't available on this Mac",
+                                      "這台 Mac 無法使用中文（台灣）語音辨識")
+        case .errAudio:       return ("Couldn't start the microphone", "無法啟動麥克風")
+        case .errRecognition: return ("Speech recognition stopped unexpectedly", "語音辨識意外中斷")
+        case .errGeneric:     return ("Something went wrong — please try again", "發生錯誤，請再試一次")
         // Settings
         case .settingsTitle:  return ("Whispurr Settings", "Whispurr 設定")
         case .fieldLanguage:  return ("Language", "語言")

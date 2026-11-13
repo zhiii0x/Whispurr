@@ -17,6 +17,11 @@ import WhispurrPipeline
 
     private var lastApplied: AppSettings?
     private var escMonitor: Any?
+    private var localEscMonitor: Any?
+    /// The menu's Pause/Resume. Every path that (re-)arms the hotkey goes through
+    /// `startHotkey()`, which honors this — so app activation or a fresh Input
+    /// Monitoring grant can't silently resume a paused app.
+    private var dictationEnabled = true
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.regular)               // Dock icon
@@ -50,6 +55,7 @@ import WhispurrPipeline
         }
         coordinator.onPartial = { [weak self] partial in self?.hud.showPartial(partial) }
         coordinator.onEmpty = { [weak self] in self?.hud.flashMessage(L10n.t(.hudHeardNothing)) }
+        coordinator.onError = { [weak self] error in self?.hud.showError(L10n.dictationError(error)) }
 
         menuBar.setAIAvailable(permissions.snapshot().appleIntelligence)
         menuBar.setCleanupEnabled(settings.cleanupEnabled)
@@ -59,11 +65,19 @@ import WhispurrPipeline
         settingsStore.onChange = { [weak self] s in self?.apply(s) }
         lastApplied = settings
 
-        // Esc cancels an in-progress dictation. We're an accessory app, so the
-        // target app is frontmost → a global monitor is the right tool (it only
-        // observes; coordinator.cancel() no-ops unless mid-cycle).
+        // Esc cancels an in-progress dictation. Usually the target app is frontmost,
+        // which only a global monitor sees (it only observes; coordinator.cancel()
+        // no-ops unless mid-cycle). A global monitor never sees events sent to
+        // Whispurr itself, though — e.g. dictating into the setup wizard's "Try it"
+        // box — so a local monitor covers that, and swallows the Esc so it cancels
+        // the take instead of also dismissing the wizard.
         escMonitor = NSEvent.addGlobalMonitorForEvents(matching: .keyDown) { [weak self] event in
             if event.keyCode == 53 { self?.coordinator.cancel() }
+        }
+        localEscMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
+            guard event.keyCode == 53, let self, self.isDictating else { return event }
+            self.coordinator.cancel()
+            return nil
         }
 
         // Request mic + speech auth early so both prompts appear on first run.
@@ -99,6 +113,14 @@ import WhispurrPipeline
 
     func applicationWillTerminate(_ notification: Notification) {
         if let escMonitor { NSEvent.removeMonitor(escMonitor) }
+        if let localEscMonitor { NSEvent.removeMonitor(localEscMonitor) }
+    }
+
+    private var isDictating: Bool {
+        switch appState.state {
+        case .listening, .processing: return true
+        default: return false
+        }
     }
 
     /// Re-sync permission-derived state whenever the app comes forward — covers the
@@ -125,6 +147,7 @@ import WhispurrPipeline
     }
 
     private func startHotkey() {
+        guard dictationEnabled else { return }   // paused from the menu — stay paused
         do {
             try coordinator.start()
         } catch {
@@ -135,6 +158,7 @@ import WhispurrPipeline
     }
 
     private func setEnabled(_ on: Bool) {
+        dictationEnabled = on
         if on { startHotkey() } else { coordinator.stop() }
         menuBar.setEnabled(on)
     }

@@ -65,8 +65,27 @@ import WhispurrCore
 
     private func loadFrames(for state: DictationState) -> [NSImage] {
         let pngs = sprites.frames(for: state).compactMap(loadPNG)
-        if !pngs.isEmpty { return pngs }
-        return [symbolImage(for: state)]
+        if !pngs.isEmpty {
+            if case .error = state { return pngs.map(Self.errorBadged) }
+            return pngs
+        }
+        return [symbolImage(for: state)]   // the fallback symbol already reads as an error
+    }
+
+    /// The error state reuses the idle art, so mark it with a small red dot in the
+    /// bottom-trailing corner — otherwise an error is indistinguishable from idle.
+    private static func errorBadged(_ base: NSImage) -> NSImage {
+        let size = base.size
+        let image = NSImage(size: size, flipped: false) { rect in
+            base.draw(in: rect)
+            let d = (size.height * 0.42).rounded()
+            let dot = NSRect(x: rect.maxX - d, y: rect.minY, width: d, height: d)
+            NSColor.systemRed.setFill()
+            NSBezierPath(ovalIn: dot).fill()
+            return true
+        }
+        image.isTemplate = false
+        return image
     }
 
     private func loadPNG(_ name: String) -> NSImage? {

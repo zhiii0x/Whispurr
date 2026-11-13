@@ -67,6 +67,9 @@ import CoreGraphics
         }
         self.tap = nil
         self.runLoopSource = nil
+        // A key held while the tap went away never delivers its release edge;
+        // don't stay "down", or the first press after re-arming is swallowed.
+        detector.reset()
     }
 
     /// Swap the trigger (e.g. the user picked a different push-to-talk key in

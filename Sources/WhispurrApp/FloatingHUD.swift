@@ -6,6 +6,8 @@ import WhispurrCore
 @MainActor final class HUDModel: ObservableObject {
     @Published var state: DictationState = .idle
     @Published var partialText: String = ""
+    /// What went wrong, shown while `state` is `.error`.
+    @Published var errorText: String?
     /// Drives the entrance/exit animation (separate from `state` so we can
     /// animate out before the panel is ordered away).
     @Published var visible: Bool = false
@@ -44,17 +46,25 @@ import WhispurrCore
     func update(_ state: DictationState) {
         model.state = state
         switch state {
-        case .listening, .processing:
+        case .listening:
+            // A fresh take: drop any text / error left over from the previous one.
+            model.partialText = ""
+            model.errorText = nil
+            show()
+        case .processing:
             show()
         case .error:
             show()
-            scheduleHide(after: .seconds(2))
+            scheduleHide(after: Timeouts.errorReset)   // long enough to read the message
         case .idle:
             scheduleHide(after: .milliseconds(120))   // let the final text flash briefly
         }
     }
 
     func showPartial(_ text: String) { model.partialText = text }
+
+    /// Explain an error (call after `update(.error)`).
+    func showError(_ text: String) { model.errorText = text }
 
     /// Briefly surface a one-off message (e.g. "沒聽到聲音") while otherwise idle.
     func flashMessage(_ text: String) {
@@ -111,6 +121,7 @@ struct HUDView: View {
 
     private var isListening: Bool { if case .listening = model.state { return true }; return false }
     private var isProcessing: Bool { if case .processing = model.state { return true }; return false }
+    private var isError: Bool { if case .error = model.state { return true }; return false }
 
     var body: some View {
         card
@@ -126,7 +137,12 @@ struct HUDView: View {
                 Image(nsImage: cat).resizable().interpolation(.none)
                     .aspectRatio(contentMode: .fit).frame(width: 28, height: 28)
             }
-            if isProcessing {
+            if isError {
+                Image(systemName: "exclamationmark.triangle.fill")
+                    .font(.system(size: 14))
+                    .foregroundStyle(.orange)
+                    .frame(width: 26, height: 16)
+            } else if isProcessing {
                 ProgressView().controlSize(.small).tint(.white)
             } else {
                 EqualizerBars(active: isListening).frame(width: 26, height: 16)
@@ -134,7 +150,7 @@ struct HUDView: View {
             Text(displayText)
                 .font(.system(size: 12.5, weight: .medium))
                 .foregroundStyle(.white)
-                .lineLimit(1)
+                .lineLimit(isError ? 2 : 1)
                 .truncationMode(.tail)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .animation(.easeOut(duration: 0.12), value: model.partialText)
@@ -149,10 +165,12 @@ struct HUDView: View {
     }
 
     private var catImage: NSImage? {
-        UIStyle.catImage(isProcessing ? "menubar-processing" : "menubar-listening")
+        if isError { return UIStyle.catImage("menubar-idle") }
+        return UIStyle.catImage(isProcessing ? "menubar-processing" : "menubar-listening")
     }
 
     private var displayText: String {
+        if isError { return model.errorText ?? L10n.t(.errGeneric) }
         if !model.partialText.isEmpty { return model.partialText }
         if isProcessing { return L10n.t(.hudProcessing) }
         if isListening { return L10n.t(.hudListening) }
