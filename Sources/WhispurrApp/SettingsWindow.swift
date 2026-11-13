@@ -64,11 +64,16 @@ enum SettingsTab: Hashable { case general, dictation, vocabulary, permissions, a
 /// Bridges the AppKit-free `SettingsStore` to SwiftUI bindings. Writes back to
 /// the store on every change (the store de-dupes no-op writes), and keeps the
 /// live UI language in sync so the form re-localizes instantly.
+///
+/// It also *follows* the store: writes made elsewhere — the menu's cleanup
+/// toggle, onboarding completion — flow straight in. Otherwise this copy goes
+/// stale and the next edit in the window writes it back, silently reverting
+/// them (e.g. `hasCompletedOnboarding` → false, so the wizard reappears).
 @MainActor final class SettingsViewModel: ObservableObject {
     @Published var settings: AppSettings {
         didSet {
             L10n.lang = settings.language     // before the body re-renders
-            store.replace(settings)
+            store.replace(settings)           // no-op when it came from the store
         }
     }
     private let store: SettingsStore
@@ -77,15 +82,14 @@ enum SettingsTab: Hashable { case general, dictation, vocabulary, permissions, a
         self.store = store
         self.settings = store.settings
         L10n.lang = store.settings.language
+        store.addObserver { [weak self] latest in
+            guard let self, self.settings != latest else { return }   // our own write echoing back
+            self.settings = latest
+        }
     }
 
     func addRule() { settings.vocabulary.append(VocabularyRule(from: "", to: "")) }
     func removeRule(_ id: UUID) { settings.vocabulary.removeAll { $0.id == id } }
-
-    /// Pull the latest persisted settings back in — the menu's quick cleanup toggle
-    /// can change the store while this window is closed. The didSet write-back is a
-    /// no-op when the value already matches (SettingsStore de-dupes).
-    func reloadFromStore() { settings = store.settings }
 }
 
 /// Window root: the settings tabs with the setup wizard layered on as a sheet, so
@@ -138,7 +142,6 @@ struct SettingsView: View {
         .background(UIStyle.softBackground)
         .environment(\.colorScheme, .light)
         .onAppear {
-            vm.reloadFromStore()   // pick up a menu-driven cleanup toggle made while closed
             perms.refresh()        // so the cleanup section can warn when Apple Intelligence is off
             if vm.settings.checkForUpdatesAutomatically, updates.state == .idle { updates.check() }
         }

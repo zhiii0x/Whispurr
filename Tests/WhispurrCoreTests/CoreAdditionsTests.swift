@@ -91,6 +91,21 @@ final class SettingsStoreTests: XCTestCase {
         store.update { $0.cleanupEnabled.toggle() }
         XCTAssertEqual(calls, 1)
     }
+
+    /// A second holder of the settings (the Settings window) must see writes made
+    /// elsewhere, e.g. onboarding completion, so it can't write a stale copy back.
+    func testAdditionalObserverSeesExternalWrites() {
+        let store = SettingsStore(defaults: makeDefaults(), key: "k")
+        var mirror = store.settings
+        var primaryCalls = 0
+        store.onChange = { _ in primaryCalls += 1 }
+        store.addObserver { mirror = $0 }
+
+        store.update { $0.hasCompletedOnboarding = true }
+
+        XCTAssertTrue(mirror.hasCompletedOnboarding)
+        XCTAssertEqual(primaryCalls, 1)
+    }
 }
 
 final class DictationStateMachineCancelTests: XCTestCase {

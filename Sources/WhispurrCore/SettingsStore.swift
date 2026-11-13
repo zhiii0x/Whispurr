@@ -1,11 +1,17 @@
 import Foundation
 
 /// Persists `AppSettings` to UserDefaults (JSON-encoded under one key) and
-/// notifies a single observer on change. Kept AppKit-free in Core so it stays
+/// notifies observers on change. Kept AppKit-free in Core so it stays
 /// unit-testable; the app layer applies side effects (login item, re-wiring).
 @MainActor public final class SettingsStore {
     public private(set) var settings: AppSettings
+    /// The app's side-effect applier (login item, pipeline re-wiring).
     public var onChange: ((AppSettings) -> Void)?
+    /// Further observers — e.g. the Settings window's view model — so anything
+    /// holding a settings copy sees writes made elsewhere (the menu's cleanup
+    /// toggle, onboarding completion) instead of later overwriting them with a
+    /// stale snapshot.
+    private var observers: [(AppSettings) -> Void] = []
 
     private let defaults: UserDefaults
     private let key: String
@@ -31,6 +37,12 @@ import Foundation
         settings = next
         persist()
         onChange?(next)
+        observers.forEach { $0(next) }
+    }
+
+    /// Register an additional change observer (lives as long as the store).
+    public func addObserver(_ observer: @escaping (AppSettings) -> Void) {
+        observers.append(observer)
     }
 
     /// Replace wholesale (e.g. from a settings form binding).
