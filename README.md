@@ -56,7 +56,7 @@ The app is **Developer-ID signed and notarized by Apple**, so the DMG opens with
 - **Fully local / offline.** On-device speech recognition + on-device LLM cleanup. No cloud, no account, no telemetry. The recognised text is never even written to the system log.
 - **Mandarin + English code-switching**, first-class. *"幫我 push 這個 commit"* stays exactly that — Traditional Chinese with English tech terms intact.
 - **Optional polish (opt-in).** Turn on Apple Intelligence cleanup to remove fillers (嗯/呃/um/uh), add punctuation, and split run-on sentences (斷句) — edit-only, never inventing. Off by default, so dictation works immediately even without Apple Intelligence (the raw transcript is inserted).
-- **Push-to-talk.** Hold a key, release to insert. A floating HUD shows the live transcript while you speak.
+- **Push-to-talk.** Hold a key, release to insert. A floating HUD shows the live transcript while you speak — and if something goes wrong (say, microphone access is off), it tells you why instead of failing silently.
 - **A delightful menu-bar cat** that puts on headphones to listen and closes its eyes to think.
 - **English / 中文 UI**, switchable in Settings (defaults to English).
 
@@ -90,7 +90,7 @@ fn > AudioCapture > SpeechTranscriber > TextCleanup > Vocabulary > TextInserter
                      menu-bar cat + floating HUD
 ```
 
-- **Recognition** — Apple `SpeechAnalyzer` / `SpeechTranscriber` (macOS 26), biased toward your tech vocabulary via contextual strings. Runs on the Neural Engine.
+- **Recognition** — Apple `SpeechAnalyzer` / `SpeechTranscriber` (macOS 26), biased toward your tech vocabulary via contextual strings. Runs on the Neural Engine. The mic goes live the moment you press the key and buffers audio while the analyzer spins up, so your first word isn't clipped.
 - **Cleanup** — Apple `FoundationModels` on-device LLM, with a strict edit-only prompt, a length guardrail (so it never "answers" your dictation), and a graceful fall-back to the raw transcript.
 - **Insertion** — pasteboard + synthetic Command-V by default (the dictated text is tagged transient/concealed so it isn't synced via Universal Clipboard or grabbed by clipboard managers), with a simulate-typing mode for IME-sensitive fields.
 - **Hotkey** — a listen-only `CGEventTap`, so it fires even inside self-drawn apps (VS Code, Zed, Electron).
@@ -217,7 +217,7 @@ Three layers, dependency-injected behind protocols and unit-tested:
 - **完全本機 / 離線。** 本機語音辨識 + 本機 LLM 整稿。無雲端、無帳號、無遙測。辨識出來的文字連系統 log 都不會寫入。
 - **中英 code-switching 一等公民。** 「幫我 push 這個 commit」就是這樣——繁體中文，英文技術詞彙原樣保留。
 - **選用的自動整稿。** 開啟 Apple Intelligence 整稿即可移除口頭禪（嗯／呃／um／uh）、補上標點、把長句斷句——只做編輯、絕不杜撰。**預設關閉**,所以沒開 Apple Intelligence 也能直接用（插入原始稿）。
-- **按住說話（push-to-talk）。** 按住一個鍵、放開即插入。說話時浮動 HUD 顯示即時逐字稿。
+- **按住說話（push-to-talk）。** 按住一個鍵、放開即插入。說話時浮動 HUD 顯示即時逐字稿；出問題時（例如麥克風權限沒開）也會直接告訴你原因，不會默默失敗。
 - **討喜的選單列貓咪**，聆聽時戴上耳機、思考時閉上眼睛。
 - **英文 / 中文介面**，可在設定切換（預設英文）。
 
@@ -251,7 +251,7 @@ fn > AudioCapture > SpeechTranscriber > TextCleanup > Vocabulary > TextInserter
                      選單列貓咪 + 浮動 HUD
 ```
 
-- **辨識** — Apple `SpeechAnalyzer` / `SpeechTranscriber`（macOS 26），透過 contextual strings 偏向你的技術詞彙，跑在 Neural Engine 上。
+- **辨識** — Apple `SpeechAnalyzer` / `SpeechTranscriber`（macOS 26），透過 contextual strings 偏向你的技術詞彙，跑在 Neural Engine 上。按下鍵的瞬間麥克風就開始收音，辨識器還在準備時先把聲音暫存起來，第一個字不會被吃掉。
 - **整稿** — Apple `FoundationModels` 本機 LLM，使用嚴格的「只編輯」prompt、長度護欄（避免它「回答」你的口述），失敗時優雅退回原始稿。
 - **插入** — 預設用剪貼簿 + 合成 Command-V（口述文字會標記為 transient/concealed，不會被 Universal Clipboard 同步、也不會被剪貼簿管理員收錄）；IME 敏感欄位可改用模擬輸入。
 - **熱鍵** — 監聽用的 `CGEventTap`，所以即使在自繪 app（VS Code、Zed、Electron）裡也能觸發。
